@@ -1,2 +1,2 @@
 # pigcasso
-python plotter from .vtk output files - using matplotlib
+VTK python plotter - inspired by the great painter pigcasso.org
