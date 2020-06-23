@@ -61,6 +61,8 @@ def statistics(run_directory,run_version,res_directory):
 
     cfr_DNSvsExp     (run_directory, "fried2000F10.11",      run_version, res_directory)
 
+    mdot_HKvsMA      (                                                    res_directory)
+
 "#################### MEAN CONTOUR PLOTS ###############################################################################" 
 
 def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
@@ -536,7 +538,7 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
             elif re.match('.+2w.+', file_d): x_dns_2w_long.append(x_dns)
 
 
-    fig= plt.figure(figsize=(12, 6))
+    fig = plt.figure(figsize=(12, 6))
 
     ###############################################################
     
@@ -585,3 +587,105 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     plt.savefig(res_dir + '/cfrDNSvsExp_%s.png'%plot_name, format='png', dpi=300) ; plt.close('all')
     
     return []
+
+"#################### MEAN PART NUMBER PLOT ####################" 
+
+def mdot_HKvsMA(res_dir):
+
+    res_dir = res_dir + '1D_plots/'
+
+    if util.chk_dir(res_dir) == False: os.makedirs(res_dir) 
+
+
+    Sh = 2. ; Re = 1500. ; Sc = 1. ; Ma = 0.046 ; alpha = 1.4 ; theta_ref = 299. ; rho_liq = 910.586 
+
+    Wvap = 278.34e-3 ; Wgas = 28.29e-3 ; Lat_heat = 91.70e+3 ; theta_boi = 613. ; Runi = 8.314 ; Rvap = 0.102 
+
+    xmin = -16 ; xmax = -3 ; npts = 14 ; Y_vap = np.logspace(xmin, xmax, npts)
+
+    xmin = -7 ; xmax = -2 ; npts = 50 ; R_prt = np.logspace(xmin, xmax, npts)
+
+
+    fig = plt.figure(figsize=(12, 6))
+
+        
+    ax_mdot = fig.add_subplot(121) ; ax_mdot.set_xscale('log') ; ax_mdot.set_yscale('log')
+    
+    xmin_mdot, xmax_mdot = 1.e-7, 1.e-2 ; ymin_mdot, ymax_mdot = 1.e-6, 1.e-2
+    
+    ax_mdot.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.0e'))
+
+#    ax_mdot.set_xlim(xmin_mdot, xmax_mdot) ; ax_mdot.set_ylim(ymin_mdot, ymax_mdot)
+
+
+    for Y in Y_vap:
+
+        theta = 1. + 200.*Y
+
+        X_sat = np.exp((Lat_heat/Runi)*(1./theta_boi - 1./theta)/theta_ref) 
+
+        Y_sat = X_sat/(X_sat + (1-X_sat)*Wgas/Wvap)
+
+        X = Y/(Y + (1-Y)*Wvap/Wgas)
+
+        mdot_MA = [] ; mdot_HK = []
+
+        mdot_MA = [abs(2.*np.pi*R*Sh/(Re*Sc)*(Y - Y_sat)) for R in R_prt]
+
+        mdot_HK = [abs((alpha/Ma)*(R**2)*np.sqrt(8.*np.pi/(Rvap*theta))*(X - X_sat)) for R in R_prt]
+
+        ###############################################################
+
+        R_cross = abs(2.*np.pi*Sh/(Re*Sc)*(Y - Y_sat)) / abs((alpha/Ma)*np.sqrt(8.*np.pi/(Rvap*theta))*(X - X_sat))
+        m_cross = abs(2.*np.pi*R_cross*Sh/(Re*Sc)*(Y - Y_sat))
+
+        ax_mdot.plot(R_cross, m_cross,'r*',label='Y = %f'%Y)
+
+        ax_mdot.plot(R_prt, mdot_MA,'b-',label='Y = %f'%Y) ; ax_mdot.plot(R_prt, mdot_HK,'g-',label='Y = %f'%Y)
+
+        
+    plt.grid(True) ; plt.title('Particle mass RHS') ; plt.xlabel('DBP local mass-franction') 
+        
+    ax_rdot = fig.add_subplot(122) ; ax_rdot.set_xscale('log') ; ax_rdot.set_yscale('log')
+   
+    xmin_rdot, xmax_rdot = 1.e-7, 1.e-2 ; ymin_rdot, ymax_rdot = 1.e-10, 1.e-6
+    
+    ax_rdot.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.0e'))
+
+#    ax_rdot.set_xlim(xmin_rdot, xmax_rdot) ; ax_rdot.set_ylim(ymin_rdot, ymax_rdot)
+        
+
+    for Y in Y_vap:
+
+        theta = 1. + 200.*Y
+
+        X_sat = np.exp((Lat_heat/Runi)*(1./theta_boi - 1./theta)/theta_ref) 
+
+        Y_sat = X_sat/(X_sat + (1-X_sat)*Wgas/Wvap)
+
+        X = Y/(Y + (1-Y)*Wvap/Wgas)
+
+        rdot_MA = [] ; rdot_HK = []
+
+        rdot_MA = [abs(Sh/(Re*Sc)/(2.*rho_liq*R)*(Y - Y_sat)) for R in R_prt]
+
+        rdot_HK = [abs((alpha/(Ma*rho_liq))*np.sqrt(1./(2.*np.pi)/(Rvap*theta))*(X - X_sat)) for R in R_prt]
+
+        ###############################################################
+
+        R_cross = abs(Sh/(Re*Sc)/(2.*rho_liq)*(Y - Y_sat)) / abs((alpha/(Ma*rho_liq))*np.sqrt(1./(2.*np.pi)/(Rvap*theta))*(X - X_sat)) 
+        m_cross = abs(Sh/(Re*Sc)/(2.*rho_liq*R_cross)*(Y - Y_sat))
+
+        ax_rdot.plot(R_cross, m_cross,'r*',label='Y = %f'%Y)
+
+        ax_rdot.plot(R_prt, rdot_MA,'b-',label='Y = %f'%Y) ; ax_rdot.plot(R_prt, rdot_HK,'g-',label='Y = %f'%Y)
+        
+    plt.grid(True); plt.title('Particle radius RHS') ; plt.xlabel('DBP local mass-franction')
+    
+        
+    fig.suptitle('Mass analogy vs Hertz-Knudsen mass transfer : approx. Temperature ', fontsize=14)
+        
+    plt.savefig(res_dir + '/mdot_HKvsMA.png', format='png', dpi=300) ; plt.close('all')
+    
+    return []
+

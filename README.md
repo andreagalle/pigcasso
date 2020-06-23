@@ -1,12 +1,14 @@
 # Pigcasso
 
-Inspired by the world-renowned Painting Pig &ndash; Pigcasso &ndash; is a Python utility plotting data from `.vtk` files (tipically the output of CFD simulations) to many other formats &ndash; such as `.eps` or `.png` &ndash; everything rely on `matplotlib`, thus for the moment just the possibility to plot `2D` and `1D` figures is available.
+Inspired by the world-renowned Painting Pig &ndash; Pigcasso &ndash; is a Python utility plotting data from `.vtk` files (tipically the output of CFD simulations) to many other formats &ndash; such as `.eps` or `.png` &ndash; everything relies on `matplotlib`, thus for the moment just the possibility to plot `2D` and `1D` figures is available.
 
 <img src="doc/gallery/pigcasso.jpg" alt="drawing" width="1000"/>
 
 *Rescued from the slaughterhouse in May 2016, Pigcasso is one fine, fortunate swine* <!-- taken from here: https://www.vegangame.it/storie-di-animali/pigcasso-la-maialina-dallestro-creativo -->
 
 At almost 2000 pounds, it's the heavy-weight Abstarct Expressionist of the World! Have a look at its [masterpieces](https://pigcasso.myshopify.com).
+
+## How to make pigcasso paint for you?
 
 The repo workflow is organised as follows:
 
@@ -22,7 +24,7 @@ To use `pigcasso` we recommend to install it "cloning" its content within a `con
 
 Assuming you are getting an update from the subtree’s remote, according to [the guide](https://medium.com/@porteneuve/mastering-git-subtrees-943d29a798ec), after checking out your feature branch, on the `container` repo, most of the times `git merge -s subtree --allow-unrelated-histories --squash pigcasso/backport` will be enough, if not opt for the default strategy (recursive) with an explicit prefix through its subtree option:
 ```
-git merge -X subtree=3rd-party/pigcasso/ --allow-unrelated-histories --squash pigcasso/backport
+git merge -X subtree=3rd-party/pigcasso/ --allow-unrelated-histories --squash pigcasso/dev
 ``` 
 and eventually solve any conflict that may arise. It can happen that the heuristics used by the subtree merge strategy to figure out the subdirectory prefix get confused.
 
