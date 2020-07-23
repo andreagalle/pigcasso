@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 import matplotlib.cm     as cm
 import matplotlib.ticker as ticker
 
+import matplotlib
+matplotlib.rcParams['backend'] = 'Agg' # configure backend here
 
 from scipy.interpolate import griddata #, interpn, interp2d
 from matplotlib import colors
@@ -61,7 +63,7 @@ def statistics(run_directory,run_version,res_directory):
 
     cfr_DNSvsExp     (run_directory, "fried2000F10.11",      run_version, res_directory)
 
-    mdot_HKvsMA      (                                                    res_directory)
+#    mdot_HKvsMA      (run_directory,                         run_version, res_directory)
 
 "#################### MEAN CONTOUR PLOTS ###############################################################################" 
 
@@ -438,11 +440,13 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
     if util.chk_dir(res_dir) == False: os.makedirs(res_dir) 
     
-    x_exp=[] ; y_exp=[] ; x_dns_list=[] ; y_dns_list=[]
+    x_exp=[] ; y_exp=[]
 
     x_dns_2w_shrt = [] ; y_dns_2w_shrt = [] ; y_dns_2w_shrt_norm = [] ; y_dns_2w_shrt_dime = [] 
     x_dns_2w_long = [] ; y_dns_2w_long = [] ; y_dns_2w_long_norm = [] ; y_dns_2w_long_dime = []
     x_dns_1w_long = [] ; y_dns_1w_long = [] ; y_dns_1w_long_norm = [] ; y_dns_1w_long_dime = []
+
+    x_dns_2w_long_alpha01 = [] ; y_dns_2w_long_alpha01 = [] ; y_dns_2w_long_norm_alpha01 = [] ; y_dns_2w_long_dime_alpha01 = []
 
 
     Wvap = 278.34e-3 ; Wgas = 28.29e-3 ; Lref_exp = 0.00375/2. ; Lref_dns = 0.00175 # pipe dimensional radius (DNS)
@@ -488,9 +492,12 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
         z = mean_fields['part_number'] ; zi = griddata((x, y), z, (xi, yi), method='linear')
 
-        y_dns = util.ProbeAtLocation(zi, xi, yi, 0.1, 40.0)
+        y_dns = util.ProbeAtLocation(zi, xi, yi, 0.5, 40.0) ; print "probed value is :", y_dns
 
-        if   re.match('.+shrt.+', file_d):
+        if   re.match('.+alpha01', file_d): y_dns_2w_long_alpha01.append(y_dns) ; y_dns_2w_long_alpha01_norm = y_dns_2w_long_alpha01 ; \
+                                            y_dns_2w_long_alpha01_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_2w_long_alpha01_norm]
+
+        elif re.match('.+shrt.+', file_d):
 
             if   re.match('.+0w.+', file_d): y_dns_0w_shrt.append(y_dns) ; y_dns_0w_shrt_norm = y_dns_0w_shrt ; \
                                              y_dns_0w_shrt_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_0w_shrt_norm]
@@ -525,7 +532,9 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
         x_dns = util.ProbeAtLocation(zi, xi, yi, 0.0, 0.1) ; x_dns = x_dns/(x_dns + (1-x_dns)*Wvap/Wgas)
 
-        if   re.match('.+shrt.+', file_d):
+        if   re.match('.+alpha01', file_d): x_dns_2w_long_alpha01.append(x_dns)
+
+        elif re.match('.+shrt.+', file_d):
 
             if   re.match('.+0w.+', file_d): x_dns_0w_shrt.append(x_dns)
             elif re.match('.+1w.+', file_d): x_dns_1w_shrt.append(x_dns)
@@ -551,9 +560,11 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     ax_dime.set_xlim(xmin_dime, xmax_dime) ; ax_dime.set_ylim(ymin_dime, ymax_dime)
     
     plt.scatter(x_exp      , y_exp_dime      , c='b', label='experiments ')
-    plt.scatter(x_dns_2w_shrt, y_dns_2w_shrt_dime, c='r', label='2w DNS short')
+#    plt.scatter(x_dns_2w_shrt, y_dns_2w_shrt_dime, c='r', label='2w DNS short')
     plt.scatter(x_dns_2w_long, y_dns_2w_long_dime, c='m', label='2w DNS long ')
-    plt.scatter(x_dns_1w_long, y_dns_1w_long_dime, c='g', label='1w DNS long ')
+#    plt.scatter(x_dns_1w_long, y_dns_1w_long_dime, c='g', label='1w DNS long ')
+
+    plt.scatter(x_dns_2w_long_alpha01, y_dns_2w_long_alpha01_dime, c='orange', label='2w DNS long alpha=0.1')
     
     plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('dimensional results')
     
@@ -574,9 +585,11 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     ax_norm.set_xlim(xmin_norm, xmax_norm) ; ax_norm.set_ylim(ymin_norm, ymax_norm)
     
     plt.scatter(x_exp      , y_exp_norm      , c='b', label='experiments ')
-    plt.scatter(x_dns_2w_shrt, y_dns_2w_shrt_norm, c='r', label='2w DNS short')
+#    plt.scatter(x_dns_2w_shrt, y_dns_2w_shrt_norm, c='r', label='2w DNS short')
     plt.scatter(x_dns_2w_long, y_dns_2w_long_norm, c='m', label='2w DNS long ')
-    plt.scatter(x_dns_1w_long, y_dns_1w_long_norm, c='g', label='1w DNS long ')
+#    plt.scatter(x_dns_1w_long, y_dns_1w_long_norm, c='g', label='1w DNS long ')
+
+    plt.scatter(x_dns_2w_long_alpha01, y_dns_2w_long_alpha01_norm, c='orange', label='2w DNS long alpha=0.1')
     
     plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('non-dimensional results')
     
@@ -590,20 +603,20 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
 "#################### MEAN PART NUMBER PLOT ####################" 
 
-def mdot_HKvsMA(res_dir):
+def mdot_HKvsMA(run_dir,run_ver,res_dir):
 
     res_dir = res_dir + '1D_plots/'
 
     if util.chk_dir(res_dir) == False: os.makedirs(res_dir) 
 
 
-    Sh = 2. ; Re = 1500. ; Sc = 1. ; Ma = 0.046 ; alpha = 1.4 ; theta_ref = 299. ; rho_liq = 910.586 
+    Sh = 2. ; Re = 1500. ; Sc = 1. ; Ma = 0.046 ; alpha = 10. ; theta_ref = 299. ; rho_liq = 910.586 
 
     Wvap = 278.34e-3 ; Wgas = 28.29e-3 ; Lat_heat = 91.70e+3 ; theta_boi = 613. ; Runi = 8.314 ; Rvap = 0.102 
 
     xmin = -16 ; xmax = -3 ; npts = 14 ; Y_vap = np.logspace(xmin, xmax, npts)
 
-    xmin = -7 ; xmax = -2 ; npts = 50 ; R_prt = np.logspace(xmin, xmax, npts)
+    xmin = -7 ; xmax = -2 ; npts = 25 ; R_prt = np.logspace(xmin, xmax, npts)
 
 
     fig = plt.figure(figsize=(12, 6))
@@ -673,7 +686,7 @@ def mdot_HKvsMA(res_dir):
 
         ###############################################################
 
-        R_cross = abs(Sh/(Re*Sc)/(2.*rho_liq)*(Y - Y_sat)) / abs((alpha/(Ma*rho_liq))*np.sqrt(1./(2.*np.pi)/(Rvap*theta))*(X - X_sat)) 
+        R_cross = abs(Sh/(Re*Sc)/(2.)*(Y - Y_sat)) / abs((alpha/(Ma))*np.sqrt(1./(2.*np.pi)/(Rvap*theta))*(X - X_sat)) 
         m_cross = abs(Sh/(Re*Sc)/(2.*rho_liq*R_cross)*(Y - Y_sat))
 
         ax_rdot.plot(R_cross, m_cross,'r*',label='Y = %f'%Y)
@@ -686,6 +699,105 @@ def mdot_HKvsMA(res_dir):
     fig.suptitle('Mass analogy vs Hertz-Knudsen mass transfer : approx. Temperature ', fontsize=14)
         
     plt.savefig(res_dir + '/mdot_HKvsMA.png', format='png', dpi=300) ; plt.close('all')
+
+                
+
+    res_dir  = res_dir + '../2D_scatter/'
+                    
+    if util.chk_dir(res_dir) == False: os.makedirs(res_dir) 
+
+
+    fig = plt.figure(figsize=(18, 12))
+
+    sc_mdot  = fig.add_subplot(221) ; sc_rdot = fig.add_subplot(222)
+    sc_temp  = fig.add_subplot(223) ; sc_cros = fig.add_subplot(224)
+
+    sc_mdot.set_xscale('log'); sc_mdot.set_yscale('log') ; sc_mdot.set_xlabel('particle radius') ; sc_mdot.set_ylabel('mass transfer')
+    sc_rdot.set_xscale('log'); sc_rdot.set_yscale('log') ; sc_rdot.set_xlabel('particle radius') ; sc_rdot.set_ylabel('radius RHS')
+
+#    print 'lines.markersize = ', matplotlib.rcParams['lines.markersize']
+
+    name_list = ['Y_vapour','Temperature']
+
+    for root, dirs, files in os.walk("%s"%run_dir):
+    
+        for filename in files:
+
+            if re.match('%sJE*.*.vtk'%run_ver, filename):
+    
+                file_d = run_dir + '%s'%(filename) ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+           
+                grid, inst_fields = rosie.getFields(out_f,name_list)
+    
+                Y_vap = inst_fields['Y_vapour'] ; Tempera = inst_fields['Temperature']
+
+
+                X_sat = [np.exp((Lat_heat/Runi)*(1./theta_boi - 1./theta)/theta_ref) for theta in Tempera] 
+
+                Y_sat = [X/(X + (1-X)*Wgas/Wvap) for X in X_sat]
+
+                X_vap = [Y/(Y + (1-Y)*Wvap/Wgas) for Y in Y_vap]
+
+                sqrtInvTempera = [np.sqrt(1./theta) for theta in Tempera]
+
+                number = 0 ; mdot_MA = [] ; mdot_HK = [] ; rdot_MA = [] ; rdot_HK = [] ; Rp = np.copy(Y_vap)
+
+                for R in R_prt:
+
+                    mdot_MA = abs(Sh/(Re*Sc)* 2.*np.pi  *R *np.subtract(Y_vap,Y_sat))
+                    rdot_MA = abs(Sh/(Re*Sc)/(2.*rho_liq*R)*np.subtract(Y_vap,Y_sat))
+    
+                    mdot_HK = abs((alpha/ Ma)*(R**2)  *np.sqrt(8. * np.pi/Rvap) *np.multiply(sqrtInvTempera,np.subtract(X_vap,X_sat)))
+                    rdot_HK = abs((alpha/(Ma*rho_liq))*np.sqrt(0.5/(np.pi*Rvap))*np.multiply(sqrtInvTempera,np.subtract(X_vap,X_sat)))
+
+		    print 'min/max MA m_dot : ', np.amin(mdot_MA), np.amax(mdot_MA)
+		    print 'min/max MA r_dot : ', np.amin(rdot_MA), np.amax(rdot_MA)
+		    print 'min/max HK m_dot : ', np.amin(mdot_HK), np.amax(mdot_HK)
+		    print 'min/max HK r_dot : ', np.amin(rdot_HK), np.amax(rdot_HK)
+
+		    Rp.fill(R*1.05)
+
+		    sc_mdot.scatter(Rp, mdot_MA, s=1.0, c='b', alpha=1.e-2, edgecolors='none', rasterized=True)
+		    sc_rdot.scatter(Rp, rdot_MA, s=1.0, c='b', alpha=1.e-2, edgecolors='none', rasterized=True)
+                                                                                                            
+                    Rp.fill(R*0.95)
+
+		    sc_mdot.scatter(Rp, mdot_HK, s=1.0, c='r', alpha=1.e-2, edgecolors='none', rasterized=True)
+		    sc_rdot.scatter(Rp, rdot_HK, s=1.0, c='r', alpha=1.e-2, edgecolors='none', rasterized=True)
+
+                    print 'radius : ', R , ' number : ', number ; number += 1 
+
+
+                R_cross = [] ; R_cross = np.divide( abs(Sh/(Re*Sc)/(2.)*np.subtract(Y_vap,Y_sat)) , abs((alpha/Ma)*np.sqrt(1./(2.*np.pi*Rvap))*np.multiply(sqrtInvTempera,np.subtract(X_vap,X_sat))) ) 
+
+
+                vmin = min(R_cross) ; vmax = max(R_cross) ; norm = colors.Normalize(vmin=vmin, vmax=vmax) #; norm = colors.LogNorm  (vmin=vmin, vmax=vmax)
+
+                sc = sc_temp.scatter(Y_vap, Tempera, s=1.0, c=R_cross, norm=norm, alpha=0.1, edgecolors='none', rasterized=True)
+
+                sc_temp.set_xlim(min(Y_vap  ), max(Y_vap  )) ; sc_temp.set_xlabel('Y')
+		sc_temp.set_ylim(min(Tempera), max(Tempera)) ; sc_temp.set_ylabel('Temperature')
+
+        	oo_magn = -5  ; cm_format = util.OOMFormatter(oo_magn, mathText=False)
+
+                cbar = plt.colorbar(sc, ax=sc_temp, format=cm_format) ; cbar.set_label('cross-over radius', rotation=270, labelpad=20)
+
+
+                vmin = min(Tempera) ; vmax = max(Tempera) ; norm = colors.Normalize(vmin=vmin, vmax=vmax)
+
+                sc = sc_cros.scatter(Y_vap, R_cross, s=1.0, c=Tempera, norm=norm, alpha=0.1, edgecolors='none', rasterized=True)
+
+                sc_cros.set_xlim(min(Y_vap  ), max(Y_vap  )) ; sc_cros.set_xlabel('Y')
+		sc_cros.set_ylim(min(R_cross), max(R_cross)) ; sc_cros.set_ylabel('cross-over radius')
+
+        	oo_magn = -5 ; sc_cros.yaxis.set_major_formatter(util.OOMFormatter(oo_magn, mathText=False))
+
+                cbar = plt.colorbar(sc, ax=sc_cros) ; cbar.set_label('Temperature', rotation=270, labelpad=20)
+
+        plt.savefig(res_dir + '/scatter_HKvsMA.png', format='png', dpi=300) ; plt.close('all')
+
+        break   #prevent decending into subfolders
+
     
     return []
 
