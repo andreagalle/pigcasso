@@ -915,7 +915,7 @@ def Jrate_sigma(run_dir,run_ver,res_dir):
 
 	plt.grid(True) ; plt.legend(loc="upper left", markerscale=5., scatterpoints=1, fontsize=10) ; plt.title('non-dimensional Nucleation rates varying the Surface tension')
 
-	sc_Jrat.set_xlabel('Surface tension [N/m]') ; sc_Jrat.set_xlabel('Nucleation rate [#]')
+	sc_Jrat.set_xlabel('Surface tension [N/m]') ; sc_Jrat.set_ylabel('Nucleation rate [#]')
 	
         plt.savefig(res_dir + '/scatter_Jrate_Sigma.png', format='png', dpi=300) ; plt.close('all')
 
