@@ -52,6 +52,7 @@ def statistics(run_directory,run_version,res_directory):
     profile_plots     (run_directory, "prad_pdf",             run_version, res_directory, fields_list)
     profile_plots     (run_directory, "pvap_pdf",             run_version, res_directory, fields_list)
     profile_plots     (run_directory, "pexp_pdf",             run_version, res_directory, fields_list)
+    profile_plots     (run_directory, "pvol_pdf",             run_version, res_directory, fields_list)
     scatter_plots     (run_directory,                         run_version, res_directory, fields_list)
    
     norm_profile_plots(run_directory, "fra_mean", "fcl_mean", run_version, res_directory)
@@ -60,6 +61,7 @@ def statistics(run_directory,run_version,res_directory):
 #
 #    cfr_profile_plots (run_directory, "prad_pdf",             run_version, res_directory)
 #    cfr_profile_plots (run_directory, "pexp_pdf",             run_version, res_directory)
+#    cfr_profile_plots (run_directory, "pvol_pdf",             run_version, res_directory)
 
     run_directory = "../../doc/cases/"
 
@@ -211,21 +213,45 @@ def profile_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
         print '\n--> plotting field %s'%field
 
-        fig = plt.figure(figsize=(9, 3)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
+        fig = plt.figure(figsize=(10, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
         
-        x = grid[:,1] if run_out == "fra_mean" else grid[:,2] ; xmin, xmax = min(x), max(x) ; ax.set_xlim(xmin, xmax)
-        y = mean_fields[field]                                ; ymin, ymax = min(y), max(y) ; ax.set_ylim(ymin, ymax)
+        x = grid[:,1] if run_out == "fra_mean" else grid[:,2] ; y = mean_fields[field]
 
-        field_name = field
+        if run_out == "pvol_pdf": x = 2.*L_ref*x # expressed as (dimensional) diameter 
 
-        if   run_out == "fra_mean":                               ax.set_xlim  (xmin, 10.0)
-        elif run_out == "prad_pdf": field_name = "rad_" + field ; ax.set_xscale('log')
-        elif run_out == "pexp_pdf": field_name = "exp_" + field ; ax.set_xscale('log')
-        elif run_out == "pvap_pdf": field_name = "vap_" + field ; ax.set_xscale('log')
+        xmin, xmax = min(x), max(x) ; ax.set_xlim(xmin, xmax)
+        ymin, ymax = min(y), max(y) ; ax.set_ylim(ymin, ymax)
 
-        plt.title('%s'%field_name ) ; ax.plot(x,y,'b-',label=r'%s'%field_name) 
+        field_name = field ; plt.title('%s'%field_name )
 
-        ax.set_xlabel(r'%s'%field) ; ax.set_ylabel(field_name)
+        if   run_out == "fra_mean": ax.set_xlabel('radial distance') ; ax.set_xlim  (xmin, 10.0)
+        elif run_out == "fcl_mean": ax.set_xlabel('axial  distance')
+
+        elif run_out == "prad_pdf": 
+            field_name = "rad_" + field ; ax.set_xscale('log')
+            ax.set_xlabel('non-dimensional particle radius')
+            ax.set_ylabel('normalized pdf')
+            plt.title    ('particle size distribution')
+
+        elif run_out == "pexp_pdf": 
+            field_name = "exp_" + field ; ax.set_xscale('log')
+            ax.set_xlabel('non-dimensional particle radius')
+            ax.set_ylabel('(filtered) normalized pdf')
+            plt.title    ('particle size distribution - experimentally detected')
+
+        elif run_out == "pvol_pdf": 
+            field_name = "vol_" + field ; ax.set_xscale('log')
+            ax.set_xlabel('dimensional particle diameter [m]')
+            ax.set_ylabel('normalized volume fraction')
+            plt.title    ('particle volume fraction distribution')
+
+        elif run_out == "pvap_pdf": 
+            field_name = "vap_" + field ; ax.set_xscale('log')
+            ax.set_xlabel('non-dimensional particle radius')
+            ax.set_ylabel('normalized pdf')
+            plt.title    ('particle mass-flux distribution')
+
+        ax.plot(x,y,'b-',label=r'%s'%field_name) 
 
         plt.legend(loc='best') ; plt.grid(which='both', axis='both',color='darkgrey')
 
@@ -426,6 +452,7 @@ def cfr_profile_plots(run_dir,run_out,run_ver,res_dir):
                         if   filename == "fra_mean": ax.set_xlim(xmin, 10.0)
                         elif filename == "prad_pdf" + prof_case + ".vtk": field_name = "rad_" + field ; ax.set_xscale('log') # ; ax.set_yscale('log')
                         elif filename == "pexp_pdf" + prof_case + ".vtk": field_name = "exp_" + field ; ax.set_xscale('log') # ; ax.set_yscale('log')
+                        elif filename == "pvol_pdf" + prof_case + ".vtk": field_name = "vol_" + field ; ax.set_xscale('log') # ; ax.set_yscale('log')
                         elif filename == "pvap_pdf": field_name = "vap_" + field ; ax.set_xscale('log') #  ax.plot(x,y,'b-',label=r'%s'%prof_case) 
 
                         if prof_case == "x18": ax.plot(x,y,'#0d4186',label=r'1.8',linewidth=2.0) # ax.plot(x,y,'#3470F0',label=r'%s'%prof_case) 
