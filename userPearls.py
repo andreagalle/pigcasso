@@ -51,6 +51,7 @@ def statistics(run_directory,run_version,res_directory):
     profile_plots     (run_directory, "fra_mean",             run_version, res_directory, fields_list)
     profile_plots     (run_directory, "prad_pdf",             run_version, res_directory, fields_list)
     profile_plots     (run_directory, "pvap_pdf",             run_version, res_directory, fields_list)
+    profile_plots     (run_directory, "pexp_pdf",             run_version, res_directory, fields_list)
     scatter_plots     (run_directory,                         run_version, res_directory, fields_list)
    
     norm_profile_plots(run_directory, "fra_mean", "fcl_mean", run_version, res_directory)
@@ -58,18 +59,28 @@ def statistics(run_directory,run_version,res_directory):
 #     run_directory = "cfr-pdf-rad/"
 #
 #    cfr_profile_plots (run_directory, "prad_pdf",             run_version, res_directory)
+#    cfr_profile_plots (run_directory, "pexp_pdf",             run_version, res_directory)
 
     run_directory = "../../doc/cases/"
 
     cfr_DNSvsExp     (run_directory, "fried2000F10.11",      run_version, res_directory)
 
 #    mdot_HKvsMA      (run_directory,                         run_version, res_directory)
+    Jrate_sigma      (run_directory,                         run_version, res_directory)
+
+"#################### PHYSICAL CONSTANTS #############################################################"
+
+Sh = 2. ; Re = 1500. ; Sc = 1. ; Ma = 0.046 ; alpha = 1. ; theta_ref = 299. ; rho_liq = 910.586 ; rho_ref = 1.1531
+
+Wvap = 278.34e-3 ; Wgas = 28.29e-3 ; Lat_heat = 91.70e+3 ; theta_boi = 613. ; Runi = 8.314 ; Rvap = 0.102 
+
+Navg = 6.022e+23 ; Kbol = 1.381e-23 ; Mmol = Wvap/Navg ; theta_zero = 273.15 ; L_ref = 1.75e-3 ; U_ref = 16.212 
 
 "#################### MEAN CONTOUR PLOTS ###############################################################################" 
 
 def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
-    nan_list = ['Crit_Radius','Crit_Radius_rms','part_number','part_radius','mass_loading']
+    nan_list = ['Crit_Radius','Crit_Radius_rms','part_number','part_radius','mass_loading','dexp_number']
 
     res_dir = res_dir + '2D_contour/'
 
@@ -107,6 +118,7 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
         if field in nan_list: 
 
            if   field == 'part_number' : z[z <= 1.e-1 ] = np.nan
+           elif field == 'dexp_number' : z[z <= 1.e-1 ] = np.nan
            elif field == 'part_radius' : z[z <= 1.e-7 ] = np.nan
            else                        : z[z <= 1.e-16] = np.nan
 
@@ -143,6 +155,7 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
             elif field == 'Jrate_rms'      : lmin =   0.0     ; lmax =   1.2    ; levels_n  = 6 ; oo_magn =  0
 
         if   field == 'part_number' : lmin = 0.0 ; lmax = util.OOMRoundDown(lmax)    ; levels_n  = 5
+        elif field == 'dexp_number' : lmin = 0.0 ; lmax = util.OOMRoundDown(lmax)    ; levels_n  = 5
         elif field == 'part_radius' : lmin = 0.0 ; lmax = util.OOMRoundUp  (lmax)    ; levels_n  = 5 ; oo_magn = util.OOMUp(lmax)
         elif field == 'mass_loading': lmin = 0.0 ; lmax = util.OOMRoundUp  (lmax)/10 ; levels_n  = 5 ; oo_magn = util.OOMUp(lmax)
 
@@ -207,6 +220,7 @@ def profile_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
         if   run_out == "fra_mean":                               ax.set_xlim  (xmin, 10.0)
         elif run_out == "prad_pdf": field_name = "rad_" + field ; ax.set_xscale('log')
+        elif run_out == "pexp_pdf": field_name = "exp_" + field ; ax.set_xscale('log')
         elif run_out == "pvap_pdf": field_name = "vap_" + field ; ax.set_xscale('log')
 
         plt.title('%s'%field_name ) ; ax.plot(x,y,'b-',label=r'%s'%field_name) 
@@ -411,6 +425,7 @@ def cfr_profile_plots(run_dir,run_out,run_ver,res_dir):
 
                         if   filename == "fra_mean": ax.set_xlim(xmin, 10.0)
                         elif filename == "prad_pdf" + prof_case + ".vtk": field_name = "rad_" + field ; ax.set_xscale('log') # ; ax.set_yscale('log')
+                        elif filename == "pexp_pdf" + prof_case + ".vtk": field_name = "exp_" + field ; ax.set_xscale('log') # ; ax.set_yscale('log')
                         elif filename == "pvap_pdf": field_name = "vap_" + field ; ax.set_xscale('log') #  ax.plot(x,y,'b-',label=r'%s'%prof_case) 
 
                         if prof_case == "x18": ax.plot(x,y,'#0d4186',label=r'1.8',linewidth=2.0) # ax.plot(x,y,'#3470F0',label=r'%s'%prof_case) 
@@ -446,7 +461,7 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     x_dns_2w_long = [] ; y_dns_2w_long = [] ; y_dns_2w_long_norm = [] ; y_dns_2w_long_dime = []
     x_dns_1w_long = [] ; y_dns_1w_long = [] ; y_dns_1w_long_norm = [] ; y_dns_1w_long_dime = []
 
-    x_dns_2w_long_alpha01 = [] ; y_dns_2w_long_alpha01 = [] ; y_dns_2w_long_norm_alpha01 = [] ; y_dns_2w_long_dime_alpha01 = []
+#    x_dns_2w_long_alpha01 = [] ; y_dns_2w_long_alpha01 = [] ; y_dns_2w_long_norm_alpha01 = [] ; y_dns_2w_long_dime_alpha01 = []
 
 
     Wvap = 278.34e-3 ; Wgas = 28.29e-3 ; Lref_exp = 0.00375/2. ; Lref_dns = 0.00175 # pipe dimensional radius (DNS)
@@ -494,10 +509,10 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
         y_dns = util.ProbeAtLocation(zi, xi, yi, 0.5, 40.0) ; print "probed value is :", y_dns
 
-        if   re.match('.+alpha01', file_d): y_dns_2w_long_alpha01.append(y_dns) ; y_dns_2w_long_alpha01_norm = y_dns_2w_long_alpha01 ; \
-                                            y_dns_2w_long_alpha01_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_2w_long_alpha01_norm]
+#        if   re.match('.+alpha01', file_d): y_dns_2w_long_alpha01.append(y_dns) ; y_dns_2w_long_alpha01_norm = y_dns_2w_long_alpha01 ; \
+#                                            y_dns_2w_long_alpha01_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_2w_long_alpha01_norm]
 
-        elif re.match('.+shrt.+', file_d):
+        if   re.match('.+shrt.+', file_d):
 
             if   re.match('.+0w.+', file_d): y_dns_0w_shrt.append(y_dns) ; y_dns_0w_shrt_norm = y_dns_0w_shrt ; \
                                              y_dns_0w_shrt_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_0w_shrt_norm]
@@ -532,9 +547,9 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
         x_dns = util.ProbeAtLocation(zi, xi, yi, 0.0, 0.1) ; x_dns = x_dns/(x_dns + (1-x_dns)*Wvap/Wgas)
 
-        if   re.match('.+alpha01', file_d): x_dns_2w_long_alpha01.append(x_dns)
+#        if   re.match('.+alpha01', file_d): x_dns_2w_long_alpha01.append(x_dns)
 
-        elif re.match('.+shrt.+', file_d):
+        if   re.match('.+shrt.+', file_d):
 
             if   re.match('.+0w.+', file_d): x_dns_0w_shrt.append(x_dns)
             elif re.match('.+1w.+', file_d): x_dns_1w_shrt.append(x_dns)
@@ -564,7 +579,7 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     plt.scatter(x_dns_2w_long, y_dns_2w_long_dime, c='m', label='2w DNS long ')
 #    plt.scatter(x_dns_1w_long, y_dns_1w_long_dime, c='g', label='1w DNS long ')
 
-    plt.scatter(x_dns_2w_long_alpha01, y_dns_2w_long_alpha01_dime, c='orange', label='2w DNS long alpha=0.1')
+#    plt.scatter(x_dns_2w_long_alpha01, y_dns_2w_long_alpha01_dime, c='orange', label='2w DNS long alpha=0.1')
     
     plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('dimensional results')
     
@@ -589,7 +604,7 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     plt.scatter(x_dns_2w_long, y_dns_2w_long_norm, c='m', label='2w DNS long ')
 #    plt.scatter(x_dns_1w_long, y_dns_1w_long_norm, c='g', label='1w DNS long ')
 
-    plt.scatter(x_dns_2w_long_alpha01, y_dns_2w_long_alpha01_norm, c='orange', label='2w DNS long alpha=0.1')
+#    plt.scatter(x_dns_2w_long_alpha01, y_dns_2w_long_alpha01_norm, c='orange', label='2w DNS long alpha=0.1')
     
     plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('non-dimensional results')
     
@@ -601,7 +616,7 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     
     return []
 
-"#################### MEAN PART NUMBER PLOT ####################" 
+"#################### MASS TRANSFER MODELS COMPARISON PLOT ####################" 
 
 def mdot_HKvsMA(run_dir,run_ver,res_dir):
 
@@ -609,10 +624,6 @@ def mdot_HKvsMA(run_dir,run_ver,res_dir):
 
     if util.chk_dir(res_dir) == False: os.makedirs(res_dir) 
 
-
-    Sh = 2. ; Re = 1500. ; Sc = 1. ; Ma = 0.046 ; alpha = 10. ; theta_ref = 299. ; rho_liq = 910.586 
-
-    Wvap = 278.34e-3 ; Wgas = 28.29e-3 ; Lat_heat = 91.70e+3 ; theta_boi = 613. ; Runi = 8.314 ; Rvap = 0.102 
 
     xmin = -16 ; xmax = -3 ; npts = 14 ; Y_vap = np.logspace(xmin, xmax, npts)
 
@@ -635,7 +646,7 @@ def mdot_HKvsMA(run_dir,run_ver,res_dir):
 
         theta = 1. + 200.*Y
 
-        X_sat = np.exp((Lat_heat/Runi)*(1./theta_boi - 1./theta)/theta_ref) 
+        X_sat = np.exp((Lat_heat/Runi)*(1./theta_boi - 1./(theta*theta_ref))) 
 
         Y_sat = X_sat/(X_sat + (1-X_sat)*Wgas/Wvap)
 
@@ -672,7 +683,7 @@ def mdot_HKvsMA(run_dir,run_ver,res_dir):
 
         theta = 1. + 200.*Y
 
-        X_sat = np.exp((Lat_heat/Runi)*(1./theta_boi - 1./theta)/theta_ref) 
+        X_sat = np.exp((Lat_heat/Runi)*(1./theta_boi - 1./(theta*theta_ref))) 
 
         Y_sat = X_sat/(X_sat + (1-X_sat)*Wgas/Wvap)
 
@@ -732,10 +743,9 @@ def mdot_HKvsMA(run_dir,run_ver,res_dir):
                 Y_vap = inst_fields['Y_vapour'] ; Tempera = inst_fields['Temperature']
 
 
-                X_sat = [np.exp((Lat_heat/Runi)*(1./theta_boi - 1./theta)/theta_ref) for theta in Tempera] 
+                X_sat = [np.exp((Lat_heat/Runi)*(1./theta_boi - 1./(theta*theta_ref))) for theta in Tempera] 
 
                 Y_sat = [X/(X + (1-X)*Wgas/Wvap) for X in X_sat]
-
                 X_vap = [Y/(Y + (1-Y)*Wvap/Wgas) for Y in Y_vap]
 
                 sqrtInvTempera = [np.sqrt(1./theta) for theta in Tempera]
@@ -797,7 +807,119 @@ def mdot_HKvsMA(run_dir,run_ver,res_dir):
         plt.savefig(res_dir + '/scatter_HKvsMA.png', format='png', dpi=300) ; plt.close('all')
 
         break   #prevent decending into subfolders
+    
+    return []
 
+"#################### NUCLEATION RATE COMPARISON VARYING SIGMA PLOT ####################" 
+
+def Jrate(Rho, Y_vap, Sigma, Tempera, Sat_R):
+
+    SupSat = 1.1 ; Rho = Rho[Sat_R > SupSat] ; Y_vap = Y_vap[Sat_R > SupSat] ; Sigma = Sigma[Sat_R > SupSat] ; Tempera = Tempera[Sat_R > SupSat] ; Sup_S = Sat_R[Sat_R > SupSat]
+
+    a_0 =     np.log(L_ref**4/U_ref) 
+    a_1 = 2. *np.log(Rho*Y_vap)
+    a_2 = 0.5*np.log(np.divide(Sigma , (np.pi*(Mmol**3)*((rho_liq*rho_ref)**2))/2))
+
+    b_0 = 16./3.*np.pi*(Wvap/(np.sqrt(Kbol)*Runi*rho_liq*rho_ref))**2
+    b_1 = np.power(np.divide(Sigma   , Tempera*theta_ref) , 3)
+    b_2 = np.power(np.log(Sup_S), -2)
+
+    print 'a_0 min/max', np.amin(a_0), np.amax(a_0), 'a_1 min/max', np.amin(a_1), np.amax(a_1), 'a_2 min/max', np.amin(a_2), np.amax(a_2)
+    print 'b_0 min/max', np.amin(b_0), np.amax(b_0), 'b_1 min/max', np.amin(b_1), np.amax(b_1), 'b_2 min/max', np.amin(b_2), np.amax(b_2)
+
+    J= np.zeros_like(Sat_R) ; J[Sat_R > SupSat] = np.exp(a_0 + a_1 + a_2 + ( - b_0*b_1*b_2))
+
+    J[Sat_R <= SupSat] = 0
+
+    J[J <= 1.e-16] = 0.
+
+    print ''
+    print 'Sigma min/max', np.amin(Sigma), np.amax(Sigma)
+    print 'Jrate min/max', np.amin(J), np.amax(J)
+    print ''
+
+    return J 
+
+def Jrate_sigma(run_dir,run_ver,res_dir):
+
+    res_dir = res_dir + '2D_scatter/'
+
+    if util.chk_dir(res_dir) == False: os.makedirs(res_dir) 
+
+
+    fig = plt.figure(figsize=(18, 9))
+        
+    sc_Jrat = fig.add_subplot(111) ; sc_Jrat.set_yscale('log')
+    
+    xmin_Jrat, xmax_Jrat = 2.7e-2, 3.4e-2 ; ymin_Jrat, ymax_Jrat = 1.e-6, 5.
+    
+#    sc_Jrat.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.0e'))
+
+    sc_Jrat.set_xlim(xmin_Jrat, xmax_Jrat) ; sc_Jrat.set_ylim(ymin_Jrat, ymax_Jrat)
+
+
+    name_list = ['Y_vapour','Temperature','Rho']
+
+    for root, dirs, files in os.walk("%s"%run_dir):
+    
+        for filename in files:
+
+            if re.match('%sJE*.*.vtk'%run_ver, filename):
+    
+                file_d = run_dir + '%s'%(filename) ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+           
+                grid, inst_fields = rosie.getFields(out_f,name_list)
+    
+                Y_vap = inst_fields['Y_vapour'] ; Tempera = inst_fields['Temperature'] ; Rho = inst_fields['Rho']
+
+
+                X_sat = [np.exp((Lat_heat/Runi)*(1./theta_boi - 1./(theta*theta_ref))) for theta in Tempera] 
+
+                Y_sat = [X/(X + (1-X)*Wgas/Wvap) for X in X_sat]
+                X_vap = [Y/(Y + (1-Y)*Wvap/Wgas) for Y in Y_vap]
+
+		Sat_R = np.divide(X_vap , X_sat)
+
+    		print ''
+		print 'calculated X_vap min/max', np.amin(X_vap), np.amax(X_vap)
+		print 'calculated X_sat min/max', np.amin(X_sat), np.amax(X_sat)
+		print 'calculated Sat_R min/max', np.amin(Sat_R), np.amax(Sat_R)
+    		print ''
+
+		Sigma_Okuyama = np.array([1.e-3*(35.30 - 0.0863*(theta*theta_ref - theta_zero)) for theta in Tempera])
+		Sigma_Bedanov = np.array([1.e-3*(35.72 - 0.0894*(theta*theta_ref - theta_zero)) for theta in Tempera])
+
+		theta_crit = 781. ; Sigma_AIChE   = np.array([0.059663*(1. - theta*theta_ref/theta_crit)**1.2457 for theta in Tempera])
+		theta_crit = 784. ; Sigma_Ambrose = np.array([0.059663*(1. - theta*theta_ref/theta_crit)**1.2457 for theta in Tempera])
+		theta_crit = 823. ; Sigma_Hameri  = np.array([0.059663*(1. - theta*theta_ref/theta_crit)**1.2457 for theta in Tempera])
+
+		Jrate_AIChE    = Jrate(Rho, Y_vap, Sigma_AIChE  , Tempera, Sat_R)
+		Jrate_Ambrose  = Jrate(Rho, Y_vap, Sigma_Ambrose, Tempera, Sat_R)
+		Jrate_Okuyama  = Jrate(Rho, Y_vap, Sigma_Okuyama, Tempera, Sat_R)
+		Jrate_Bedanov  = Jrate(Rho, Y_vap, Sigma_Bedanov, Tempera, Sat_R)
+		Jrate_Hameri   = Jrate(Rho, Y_vap, Sigma_Hameri , Tempera, Sat_R)
+
+    		print ''
+    		print 'Jrate_AIChE   min/max', np.amin(Jrate_AIChE  ), np.amax(Jrate_AIChE  )
+    		print 'Jrate_Ambrose min/max', np.amin(Jrate_Ambrose), np.amax(Jrate_Ambrose)
+    		print 'Jrate_Okuyama min/max', np.amin(Jrate_Okuyama), np.amax(Jrate_Okuyama)
+    		print 'Jrate_Bedanov min/max', np.amin(Jrate_Bedanov), np.amax(Jrate_Bedanov)
+    		print 'Jrate_Hameri  min/max', np.amin(Jrate_Hameri ), np.amax(Jrate_Hameri )
+    		print ''
+
+                sc = sc_Jrat.scatter(Sigma_AIChE  , Jrate_AIChE  , s=0.5, c='green' , alpha=1., edgecolors='none', rasterized=True, label='AIChE  ')
+                sc = sc_Jrat.scatter(Sigma_Ambrose, Jrate_Ambrose, s=0.5, c='orange', alpha=1., edgecolors='none', rasterized=True, label='Ambrose')
+                sc = sc_Jrat.scatter(Sigma_Okuyama, Jrate_Okuyama, s=0.5, c='blue'  , alpha=1., edgecolors='none', rasterized=True, label='Okuyama')
+                sc = sc_Jrat.scatter(Sigma_Bedanov, Jrate_Bedanov, s=0.5, c='red'   , alpha=1., edgecolors='none', rasterized=True, label='Bedanov')
+                sc = sc_Jrat.scatter(Sigma_Hameri , Jrate_Hameri , s=0.5, c='black' , alpha=1., edgecolors='none', rasterized=True, label='Hameri ')
+
+	plt.grid(True) ; plt.legend(loc="upper left", markerscale=5., scatterpoints=1, fontsize=10) ; plt.title('non-dimensional Nucleation rates varying the Surface tension')
+
+	sc_Jrat.set_xlabel('Surface tension [N/m]') ; sc_Jrat.set_xlabel('Nucleation rate [#]')
+	
+        plt.savefig(res_dir + '/scatter_Jrate_Sigma.png', format='png', dpi=300) ; plt.close('all')
+
+        break   #prevent decending into subfolders
     
     return []
 
