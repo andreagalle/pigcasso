@@ -32,14 +32,12 @@ and eventually solve any conflict that may arise. It can happen that the heurist
 
 To backport it's quite an easy task, according to [the guide](https://medium.com/@porteneuve/mastering-git-subtrees-943d29a798ec), after pushing "the" commit (to backport here) on the `container` repo, you will have to follow these steps:
 ```
-git stash
+git stash ; wrk_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
 git remote add -f pigcasso https://github.com/andreagalle/pigcasso.git
 git checkout -b oink pigcasso/backport
-git cherry-pick -x --strategy=subtree HEAD^
-git show HEAD --stat
+git cherry-pick -x --strategy=subtree $wrk_branch && git show HEAD --stat
 git push pigcasso oink:backport
-git checkout HEAD^
-git stash apply
+git checkout $wrk_branch && git stash apply
 ```
 of course the `git show HEAD --stat` command is not neccessary, but advised to check everything before pushing upstream here. To check in more detail `git log --graph --decorate --oneline` and `git show HEAD` are always the best options.
 
