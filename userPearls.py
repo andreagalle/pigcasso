@@ -476,7 +476,7 @@ def cfr_profile_plots(run_dir,run_out,run_ver,res_dir):
 
 def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
-    name_list = [] ; file_list = []
+    name_list = [] ; file_list = [] ; run_vers = [run_ver,"g"] #; run_vers = list(run_ver).append("g")
 
     res_dir = res_dir + '2D_scatter/'
 
@@ -488,7 +488,8 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     x_dns_2w_long = [] ; y_dns_2w_long = [] ; y_dns_2w_long_norm = [] ; y_dns_2w_long_dime = []
     x_dns_1w_long = [] ; y_dns_1w_long = [] ; y_dns_1w_long_norm = [] ; y_dns_1w_long_dime = []
 
-#    x_dns_2w_long_alpha01 = [] ; y_dns_2w_long_alpha01 = [] ; y_dns_2w_long_norm_alpha01 = [] ; y_dns_2w_long_dime_alpha01 = []
+    x_dns_2w_long_okuyama = [] ; y_dns_2w_long_okuyama = [] ; y_dns_2w_long_norm_okuyama = [] ; y_dns_2w_long_dime_okuyama = []
+    x_dns_2w_long_hameri  = [] ; y_dns_2w_long_hameri  = [] ; y_dns_2w_long_norm_hameri  = [] ; y_dns_2w_long_dime_hameri  = []
 
 
     Wvap = 278.34e-3 ; Wgas = 28.29e-3 ; Lref_exp = 0.00375/2. ; Lref_dns = 0.00175 # pipe dimensional radius (DNS)
@@ -518,8 +519,10 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
                 
                 y_exp_norm = [i * norm_exp for i in y_exp_dime]
 
-            if re.match('%s%s.vtk'%(run_ver,dns_dataset), filename): file_list.append(os.path.join(root, filename))
+            if re.match('%s%s.vtk'%(run_vers,dns_dataset), filename): file_list.append(os.path.join(root, filename))
 
+    print "the file list is : ", file_list
+    print "the run ver is : ", run_vers
 
     for dns_dataset in file_list: 
 
@@ -536,8 +539,11 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
         y_dns = util.ProbeAtLocation(zi, xi, yi, 0.5, 40.0) ; print "probed value is :", y_dns
 
-#        if   re.match('.+alpha01', file_d): y_dns_2w_long_alpha01.append(y_dns) ; y_dns_2w_long_alpha01_norm = y_dns_2w_long_alpha01 ; \
-#                                            y_dns_2w_long_alpha01_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_2w_long_alpha01_norm]
+        if   re.match('.+okuyama', file_d): y_dns_2w_long_okuyama.append(y_dns) ; y_dns_2w_long_norm_okuyama = y_dns_2w_long_okuyama ; \
+                                            y_dns_2w_long_dime_okuyama = [(i / norm_dns )* ((0.8)**3) for i in y_dns_2w_long_norm_okuyama]
+
+        if   re.match('.+hameri', file_d): y_dns_2w_long_hameri.append(y_dns) ; y_dns_2w_long_norm_hameri = y_dns_2w_long_hameri ; \
+                                            y_dns_2w_long_dime_hameri = [(i / norm_dns )* ((0.8)**3) for i in y_dns_2w_long_norm_hameri]
 
         if   re.match('.+shrt.+', file_d):
 
@@ -574,7 +580,8 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
         x_dns = util.ProbeAtLocation(zi, xi, yi, 0.0, 0.1) ; x_dns = x_dns/(x_dns + (1-x_dns)*Wvap/Wgas)
 
-#        if   re.match('.+alpha01', file_d): x_dns_2w_long_alpha01.append(x_dns)
+        if   re.match('.+okuyama', file_d): x_dns_2w_long_okuyama.append(x_dns)
+        if   re.match('.+hameri', file_d): x_dns_2w_long_hameri.append(x_dns)
 
         if   re.match('.+shrt.+', file_d):
 
@@ -606,7 +613,8 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     plt.scatter(x_dns_2w_long, y_dns_2w_long_dime, c='m', label='2w DNS long ')
 #    plt.scatter(x_dns_1w_long, y_dns_1w_long_dime, c='g', label='1w DNS long ')
 
-#    plt.scatter(x_dns_2w_long_alpha01, y_dns_2w_long_alpha01_dime, c='orange', label='2w DNS long alpha=0.1')
+    plt.scatter(x_dns_2w_long_okuyama, y_dns_2w_long_dime_okuyama, c='orange', label='2w DNS long Okuyama')
+    plt.scatter(x_dns_2w_long_hameri,  y_dns_2w_long_dime_hameri,  c='red',    label='2w DNS long Hameri')
     
     plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('dimensional results')
     
@@ -631,7 +639,8 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     plt.scatter(x_dns_2w_long, y_dns_2w_long_norm, c='m', label='2w DNS long ')
 #    plt.scatter(x_dns_1w_long, y_dns_1w_long_norm, c='g', label='1w DNS long ')
 
-#    plt.scatter(x_dns_2w_long_alpha01, y_dns_2w_long_alpha01_norm, c='orange', label='2w DNS long alpha=0.1')
+    plt.scatter(x_dns_2w_long_okuyama, y_dns_2w_long_norm_okuyama, c='orange', label='2w DNS long Okuyama')
+    plt.scatter(x_dns_2w_long_hameri,  y_dns_2w_long_norm_hameri,  c='red',    label='2w DNS long Hameri')
     
     plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('non-dimensional results')
     
@@ -878,7 +887,7 @@ def Jrate_sigma(run_dir,run_ver,res_dir):
         
     sc_Jrat = fig.add_subplot(111) ; sc_Jrat.set_yscale('log')
     
-    xmin_Jrat, xmax_Jrat = 2.7e-2, 3.4e-2 ; ymin_Jrat, ymax_Jrat = 1.e-6, 5.
+    xmin_Jrat, xmax_Jrat = 2.7e-2, 3.4e-2 ; ymin_Jrat, ymax_Jrat = 1.e-6, 50.
     
 #    sc_Jrat.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.0e'))
 
