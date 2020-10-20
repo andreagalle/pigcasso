@@ -177,6 +177,12 @@ def snapshots(run_dir,run_ver,res_dir,fn_head,name_list):
                     if   field == 'J_rate'      : lmin =  0.0     ; lmax =  3.6    ; levels_n  = 9
                     elif field == 'Rate_nucl'   : lmin =  1.0e-16 ; lmax =  1.0e-4
                     elif field == 'Crit_rad'    : lmin =  1.0e-7  ; lmax =  9.0e-7                 ; oo_magn = -7
+
+                elif zone == '%sJE'%run_ver and np.isclose(max(inst_fields['Y_vapour']),2.5e-3, rtol=1e-4, atol=1e-4):
+
+                    if   field == 'J_rate'      : lmin =  0.0     ; lmax =  3.6    ; levels_n  = 9
+                    elif field == 'Rate_nucl'   : lmin =  1.0e-16 ; lmax =  1.0e-4
+                    elif field == 'Crit_rad'    : lmin =  1.0e-7  ; lmax =  9.0e-7                 ; oo_magn = -7
  		
         	lcountour = np.linspace(lmin, lmax, levels_n + 1)
 

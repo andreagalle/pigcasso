@@ -8,6 +8,8 @@ import os, sys, math #, shutil
 import numpy as np
 import matplotlib.ticker as ticker
 
+from itertools import product 
+
 sys.dont_write_bytecode = True
 
 "###################################"
@@ -103,7 +105,9 @@ def ProbeAtLocation(z, x, y, x0, y0):
     idx = find_nearest(x, x0, 1)
     idy = find_nearest(y, y0, 0)
 
-    z_probe = z[idy[0],idx[0]]
+    probe_dim = 5 ; probe_stencil = product(range(idy[0], idy[0] + probe_dim), range(idx[0], idx[0] + probe_dim))
+
+    z_probe = np.average(np.array([z[k] for k in probe_stencil])) # = z[idy[0],idx[0]]
 
     return z_probe
 

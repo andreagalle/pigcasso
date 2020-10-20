@@ -476,7 +476,7 @@ def cfr_profile_plots(run_dir,run_out,run_ver,res_dir):
 
 def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
-    name_list = [] ; file_list = [] ; run_vers = [run_ver,"g"] #; run_vers = list(run_ver).append("g")
+    name_list = [] ; file_list = [] ; run_vers = [run_ver,"g","h"] #; run_vers = list(run_ver).append("g")
 
     res_dir = res_dir + '2D_scatter/'
 
@@ -521,11 +521,8 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
             if re.match('%s%s.vtk'%(run_vers,dns_dataset), filename): file_list.append(os.path.join(root, filename))
 
-    print "the file list is : ", file_list
-    print "the run ver is : ", run_vers
 
     for dns_dataset in file_list: 
-
 
         file_d = dns_dataset ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
 
@@ -608,15 +605,16 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
     ax_dime.set_xlim(xmin_dime, xmax_dime) ; ax_dime.set_ylim(ymin_dime, ymax_dime)
     
-    plt.scatter(x_exp      , y_exp_dime      , c='b', label='experiments ')
-#    plt.scatter(x_dns_2w_shrt, y_dns_2w_shrt_dime, c='r', label='2w DNS short')
-    plt.scatter(x_dns_2w_long, y_dns_2w_long_dime, c='m', label='2w DNS long ')
-#    plt.scatter(x_dns_1w_long, y_dns_1w_long_dime, c='g', label='1w DNS long ')
+    plt.scatter(x_exp      , y_exp_dime      , c='b')#, label='experiments ')
+##    plt.scatter(x_dns_2w_shrt, y_dns_2w_shrt_dime, c='r', label='2w DNS short')
+#    plt.scatter(x_dns_2w_long, y_dns_2w_long_dime, c='m', label='2w DNS long ')
+##    plt.scatter(x_dns_1w_long, y_dns_1w_long_dime, c='g', label='1w DNS long ')
 
     plt.scatter(x_dns_2w_long_okuyama, y_dns_2w_long_dime_okuyama, c='orange', label='2w DNS long Okuyama')
     plt.scatter(x_dns_2w_long_hameri,  y_dns_2w_long_dime_hameri,  c='red',    label='2w DNS long Hameri')
     
-    plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('dimensional results')
+#    plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('dimensional results')
+    plt.grid(True) ; plt.legend(loc="upper left") ; plt.title('dimensional results')
     
     plt.xlabel('DBP inlet molar-franction') ; plt.ylabel('Particle Number Density (#/cc)')
     
@@ -634,15 +632,16 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
     ax_norm.set_xlim(xmin_norm, xmax_norm) ; ax_norm.set_ylim(ymin_norm, ymax_norm)
     
-    plt.scatter(x_exp      , y_exp_norm      , c='b', label='experiments ')
-#    plt.scatter(x_dns_2w_shrt, y_dns_2w_shrt_norm, c='r', label='2w DNS short')
-    plt.scatter(x_dns_2w_long, y_dns_2w_long_norm, c='m', label='2w DNS long ')
-#    plt.scatter(x_dns_1w_long, y_dns_1w_long_norm, c='g', label='1w DNS long ')
+    plt.scatter(x_exp      , y_exp_norm      , c='b')#, label='experiments ')
+##    plt.scatter(x_dns_2w_shrt, y_dns_2w_shrt_norm, c='r', label='2w DNS short')
+#    plt.scatter(x_dns_2w_long, y_dns_2w_long_norm, c='m', label='2w DNS long ')
+##    plt.scatter(x_dns_1w_long, y_dns_1w_long_norm, c='g', label='1w DNS long ')
 
     plt.scatter(x_dns_2w_long_okuyama, y_dns_2w_long_norm_okuyama, c='orange', label='2w DNS long Okuyama')
     plt.scatter(x_dns_2w_long_hameri,  y_dns_2w_long_norm_hameri,  c='red',    label='2w DNS long Hameri')
     
-    plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('non-dimensional results')
+#    plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('non-dimensional results')
+    plt.grid(True) ; plt.legend(loc="upper left") ; plt.title('non-dimensional results')
     
     plt.xlabel('DBP inlet molar-franction') ; plt.ylabel('Particle Number Density (#/dV)')
     
