@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+#SBATCH --job-name=pig-x21-Re6k-2w-okuyama
+#SBATCH --output=log/%x-%j.out
+#SBATCH --error=log/%x-%j.err
+#
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem=118000MB
+#
+#SBATCH --time=00:30:00
+#SBATCH --partition=gll_usr_prod
+#SBATCH --qos=gll_qos_dbg
+#####SBATCH --partition=gll_all_serial
+#
+#SBATCH --account=IscrB_SMMB_1
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=andrea.gallegati@uniroma1.it
+
+
+ulimit -s unlimited
+
+OMP_NUM_THREADS=1
+export OMP_NUM_THREADS
+OMP_STACKSIZE=32000000
+export OMP_STACKSIZE
+
+module load profile/eng 
+module load intel/pe-xe-2018--binary 
+module load python/2.7.12
+
+./oink.py

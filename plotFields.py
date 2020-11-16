@@ -158,7 +158,7 @@ def snapshots(run_dir,run_ver,res_dir,fn_head,name_list):
         	elif field == 'Uf_trz_m'    : lmin =  0.0     ; lmax =   2.4    ; levels_n  = 16
         	elif field == 'Y_vapour'    : lmin =  1.0e-5  ; lmax =   3.2e-3 ; levels_n  = 16 ; oo_magn = -3
 
-                elif field in ['fp_trz_m','fp_trz_t','fp_trz_r','fp_trz_z','fp_vap','fp_div','fp_rho']:
+                elif zone == '%sJE'%run_ver and field in ['fp_trz_m','fp_trz_t','fp_trz_r','fp_trz_z','fp_vap','fp_div','fp_rho']:
 
                     lmin = util.OOMRoundUp(lmin)/100 ; lmax = util.OOMRoundUp(lmax)/100
 

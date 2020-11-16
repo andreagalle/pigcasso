@@ -161,6 +161,14 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
         elif field == 'part_radius' : lmin = 0.0 ; lmax = util.OOMRoundUp  (lmax)    ; levels_n  = 5 ; oo_magn = util.OOMUp(lmax)
         elif field == 'mass_loading': lmin = 0.0 ; lmax = util.OOMRoundUp  (lmax)/10 ; levels_n  = 5 ; oo_magn = util.OOMUp(lmax)
 
+        elif field in ['Utf_med','Urf_med','Uzf_med']:
+
+            lmin = util.OOMRoundUp(lmin)/100 ; lmax = util.OOMRoundUp(lmax)/100
+
+            labs = min(abs(lmin),abs(lmax)) if min(abs(lmin),abs(lmax)) > 1.e-16 else max(abs(lmin),abs(lmax))
+
+            lmin = - labs ; lmax = labs ; levels_n  = 5
+
         lcountour = np.linspace(lmin, lmax, levels_n + 1)
 
         if   field == 'Sat_Ratio'       : lcountour[0] = 1.0

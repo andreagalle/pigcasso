@@ -209,8 +209,8 @@ def getSlice(data_outVTK, orig, nor):
 
     # Cutter plane
     planeCut = vtk.vtkCutter()
-#    planeCut.SetInputData(data_outVTK) # VTK6 SetInput() repl. with SetInputData() vtk.org/Wiki/VTK/VTK_6_Migration/Replacement_of_SetInput
-    planeCut.SetInput(data_outVTK)    # sometimes to switch one another
+    planeCut.SetInputData(data_outVTK) # VTK6 SetInput() repl. with SetInputData() vtk.org/Wiki/VTK/VTK_6_Migration/Replacement_of_SetInput
+#    planeCut.SetInput(data_outVTK)    # sometimes to switch one another
     planeCut.SetCutFunction(plane)
 
     # Make the slice
