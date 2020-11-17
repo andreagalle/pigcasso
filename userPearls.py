@@ -50,10 +50,10 @@ def statistics(run_directory,run_version,res_directory):
     profile_plots     (run_directory, "fcl_mean",             run_version, res_directory, fields_list)
     profile_plots     (run_directory, "fra_mean",             run_version, res_directory, fields_list)
     profile_plots     (run_directory, "prad_pdf",             run_version, res_directory, fields_list)
-    profile_plots     (run_directory, "pvap_pdf",             run_version, res_directory, fields_list)
-    profile_plots     (run_directory, "pexp_pdf",             run_version, res_directory, fields_list)
-    profile_plots     (run_directory, "pvol_pdf",             run_version, res_directory, fields_list)
-    scatter_plots     (run_directory,                         run_version, res_directory, fields_list)
+#    profile_plots     (run_directory, "pvap_pdf",             run_version, res_directory, fields_list)
+#    profile_plots     (run_directory, "pexp_pdf",             run_version, res_directory, fields_list)
+#    profile_plots     (run_directory, "pvol_pdf",             run_version, res_directory, fields_list)
+#    scatter_plots     (run_directory,                         run_version, res_directory, fields_list)
    
     norm_profile_plots(run_directory, "fra_mean", "fcl_mean", run_version, res_directory)
 
@@ -67,8 +67,8 @@ def statistics(run_directory,run_version,res_directory):
 
     cfr_DNSvsExp     (run_directory, "fried2000F10.11",      run_version, res_directory)
 
-#    mdot_HKvsMA      (run_directory,                         run_version, res_directory)
-    Jrate_sigma      (run_directory,                         run_version, res_directory)
+##    mdot_HKvsMA      (run_directory,                         run_version, res_directory)
+#    Jrate_sigma      (run_directory,                         run_version, res_directory)
 
 "#################### PHYSICAL CONSTANTS #############################################################"
 
@@ -119,8 +119,8 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
         if field in nan_list: 
 
-           if   field == 'part_number' : z[z <= 1.e-1 ] = np.nan
-           elif field == 'dexp_number' : z[z <= 1.e-1 ] = np.nan
+           if   field == 'part_number' : z[z <= 1.e-16] = np.nan
+           elif field == 'dexp_number' : z[z <= 1.e-16] = np.nan
            elif field == 'part_radius' : z[z <= 1.e-7 ] = np.nan
            else                        : z[z <= 1.e-16] = np.nan
 
@@ -165,7 +165,7 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
             lmin = util.OOMRoundUp(lmin)/100 ; lmax = util.OOMRoundUp(lmax)/100
 
-            labs = min(abs(lmin),abs(lmax)) if min(abs(lmin),abs(lmax)) > 1.e-16 else max(abs(lmin),abs(lmax))
+            labs = min(abs(lmin),abs(lmax)) if min(abs(lmin),abs(lmax)) > 1.e-16 else 1.e-16 # max(abs(lmin),abs(lmax))
 
             lmin = - labs ; lmax = labs ; levels_n  = 5
 
