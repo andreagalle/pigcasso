@@ -120,7 +120,7 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
         if field in nan_list: 
 
            if   field == 'part_number' : z[z <= 1.e-16] = np.nan
-           elif field == 'dexp_number' : z[z <= 1.e-16] = np.nan
+           elif field == 'dexp_number' : break # z[z <= 1.e-16] = np.nan
            elif field == 'part_radius' : z[z <= 1.e-7 ] = np.nan
            else                        : z[z <= 1.e-16] = np.nan
 
