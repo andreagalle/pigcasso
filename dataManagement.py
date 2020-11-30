@@ -32,25 +32,25 @@ def getFields(out_f,fields_names):
     for field_name in fields_names: 
 
         if field_name not in fields_avails: continue
-
+        
         [GridCoords, field_array] = getArrayFromPointData(out_f, field_name)
-
+        
         if field_array.ndim > 1:
-
-	    field_array_comp = field_array[:,0]
+        
+            field_array_comp = field_array[:,0]
             fields_dictionary.update({field_name + '_t': field_array_comp})
-	    field_array_comp = field_array[:,1]
+            field_array_comp = field_array[:,1]
             fields_dictionary.update({field_name + '_r': field_array_comp})
-
+            
             if np.shape(field_array)[1] == 3:
-		
-	    	field_array_comp = field_array[:,2]
+            
+                field_array_comp = field_array[:,2]
             	fields_dictionary.update({field_name + '_z': field_array_comp})
-
-	    field_array_magn = np.linalg.norm(field_array,axis=1)
+            
+            field_array_magn = np.linalg.norm(field_array,axis=1)
             fields_dictionary.update({field_name + '_m': field_array_magn})
-
-	else:
+        
+        else:
             fields_dictionary.update({field_name : field_array})
 
     return GridCoords, fields_dictionary

@@ -4,10 +4,11 @@
 userPearls.py
 """
 
-import os, sys, re, copy, csv #, math, shutil
+import os, sys, re, copy, csv #, math, shutil, fnmatch
 import dataManagement as rosie
 import toolCase as util
 import numpy as np
+#import numpy.ma as ma
 
 import matplotlib.pyplot as plt
 import matplotlib.cm     as cm
@@ -43,7 +44,7 @@ def throw(run_directory,run_version,res_directory):
 
 def statistics(run_directory,run_version,res_directory):
 
-    fields_list = []
+    fields_list = [] # put at least one field for 'flu_mean' & one for 'prt_mean'
 
     contour_plots     (run_directory, "flu_mean",             run_version, res_directory, fields_list)
     contour_plots     (run_directory, "prt_mean",             run_version, res_directory, fields_list)
@@ -54,7 +55,6 @@ def statistics(run_directory,run_version,res_directory):
 #    profile_plots     (run_directory, "pexp_pdf",             run_version, res_directory, fields_list)
 #    profile_plots     (run_directory, "pvol_pdf",             run_version, res_directory, fields_list)
 #    scatter_plots     (run_directory,                         run_version, res_directory, fields_list)
-   
     norm_profile_plots(run_directory, "fra_mean", "fcl_mean", run_version, res_directory)
 
 #     run_directory = "cfr-pdf-rad/"
@@ -134,12 +134,11 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
         if   field == 'Temperature'    : lmin =   0.9     ; lmax =   1.3
         elif field == 'Temperature_rms': lmin =   0.0     ; lmax =   0.1    ; levels_n  = 5
+        elif field == 'Sat_Ratio'      : lmin =   0.0     ; lmax = 900.0    ; levels_n  = 6
         elif field == 'Y'              : lmin =   0.0     ; lmax =   3.2e-3                 ; oo_magn = -3
-        elif field == 'Sat_Ratio '     : lmin =   0.0     ; lmax = 900.0    ; levels_n  = 6
+        elif field == 'Y_saturat'      : lmin =   0.0     ; lmax =   3.2e-6                 ; oo_magn = -6
         elif field == 'Rho'            : lmin =   0.7     ; lmax =   1.0    ; levels_n  = 6
         elif field == 'U_r'            : lmin =  -0.03    ; lmax =   0.03   ; levels_n  = 6 ; oo_magn = -2
-        elif field == 'fp_div'         : lmin = - 1.0e-7  ; lmax =   0.0    ; levels_n  = 5 ; oo_magn = -7
-        elif field == 'fp_vap'         : lmin =   0.0     ; lmax =   5.0e-8 ; levels_n  = 5 ; oo_magn = -8
         elif field == 'Crit_Radius'    : lmin =   1.0e-7  ; lmax =   9.0e-7                 ; oo_magn = -7
         elif field == 'Crit_Radius_rms': lmin =   1.0e-7  ; lmax =   3.0e-7 ; levels_n  = 6 ; oo_magn = -7
         elif field == 'Nucl_rate'      : lmin =   1.0e-16 ; lmax =   1.0e-5 ; levels_n  = 6 ; oo_magn = -5
@@ -156,6 +155,12 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
             elif field == 'fake_J_rate'    : lmin =   0.0     ; lmax =   3.6    ; levels_n  = 6 ; oo_magn =  0
             elif field == 'Jrate_rms'      : lmin =   0.0     ; lmax =   1.2    ; levels_n  = 6 ; oo_magn =  0
 
+        if run_out == 'flu_mean' and np.isclose(max(mean_fields['Y']),2.5e-3, rtol=1e-4, atol=1e-4):
+
+            if   field == 'J_rate'         : lmin =   0.0     ; lmax =   36.    ; levels_n  = 6 ; oo_magn =  0
+            elif field == 'fake_J_rate'    : lmin =   0.0     ; lmax =   36.    ; levels_n  = 6 ; oo_magn =  0
+            elif field == 'Jrate_rms'      : lmin =   0.0     ; lmax =   1.2    ; levels_n  = 6 ; oo_magn =  0
+
         if   field == 'part_number' : lmin = 0.0 ; lmax = util.OOMRoundDown(lmax)    ; levels_n  = 5
         elif field == 'dexp_number' : lmin = 0.0 ; lmax = util.OOMRoundDown(lmax)    ; levels_n  = 5
         elif field == 'part_radius' : lmin = 0.0 ; lmax = util.OOMRoundUp  (lmax)    ; levels_n  = 5 ; oo_magn = util.OOMUp(lmax)
@@ -168,6 +173,14 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
             labs = min(abs(lmin),abs(lmax)) if min(abs(lmin),abs(lmax)) > 1.e-16 else 1.e-16 # max(abs(lmin),abs(lmax))
 
             lmin = - labs ; lmax = labs ; levels_n  = 5
+            
+        elif re.match('fp_.+',field) :
+        
+            lmin = util.OOMRoundUp(lmin) ; lmax = util.OOMRoundUp(lmax)
+        
+            labs = min(abs(lmin),abs(lmax)) if min(abs(lmin),abs(lmax)) > 1.e-16 else max(abs(lmin),abs(lmax))
+            
+            lmin = - labs ; lmax = labs ; levels_n  = 5
 
         lcountour = np.linspace(lmin, lmax, levels_n + 1)
 
@@ -175,13 +188,9 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
         elif field == 'Temperature_rms' : lcountour    = np.insert(lcountour, 1, 0.01) #, axis = 0)
 
-        elif field in ['Y','U_r','part_radius','mass_loading','fp_div'] : 
+        elif field in ['Y','Y_saturat','U_r','part_radius','mass_loading'] :
 
             cm_format = util.OOMFormatter    (oo_magn, mathText=False)
-
-        elif field == 'fp_vap' :
-
-            cm_format = util.OOMFormatter_eng(oo_magn, mathText=False)
 
         elif field in ['J_rate','Jrate_rms','fake_J_rate'] : 
 
@@ -195,13 +204,44 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
     
 	# CONTOUR: draws the boundaries of the isosurfaces & fill the contour plots
 
-        if run_out != 'prt_mean': cp = plt.contour (yi,xi,zi,levels=lcountour,linewidths=0.5,colors='black')
+        if run_out != 'prt_mean' and field not in ["fp_m","fp_t","fp_r","fp_z","fp_vap"] : 
+
+            cp = plt.contour (yi,xi,zi,levels=lcountour,linewidths=0.5,colors='black')
 
         cp = plt.contourf(yi,xi,zi,levels=lcountour,vmin=lmin,vmax=lmax,extend='both',cmap=my_cmap) #,cmap=cm.viridis) 
     
         plt.colorbar(cp,format=cm_format,orientation='horizontal') ; fig.tight_layout() # upgrade plt: location='bottom'
     
-        plt.savefig(res_dir + '/%s.png'%field, format='png', dpi=300) ; plt.close('all')
+        plt.savefig(res_dir + '/%s.png'%field, format='png', dpi=300) ; plt.close()#'all')
+
+        if   field in ['Sat_Ratio','J_rate','fake_J_rate'] : 
+
+            fig = plt.figure(figsize=(9, 3)) ; ax = fig.add_subplot(111)
+    
+            ax.set_aspect(1, adjustable = 'box') ; cmap = cm.get_cmap('Blues_r')
+    
+            ax.set_xlim(0.0, 99.0) ; ax.set_ylim(0.0, 24.0)
+    
+            func = lambda x, pos: "" if np.isclose(x,0) else "%.f" % x
+    
+            plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(func))
+            plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
+
+            zi[zi <= 1.e-16] = np.nan ; lmin = np.nanmin(zi) ; lmax = np.nanmax(zi)
+
+#            zi = ma.masked_invalid(zi) ; my_cmap.set_bad(color='lightyellow') # no effect on contourf
+
+            if   field == 'Sat_Ratio'              : lmin = 1.e+1 ; lmax = 1.e+4 #; levels_n = 3
+            elif field in ['J_rate','fake_J_rate'] : lmin = 1.e-1 ; lmax = 1.e+3 #; levels_n = 3
+
+            lev_exp = np.arange(np.floor(np.log10(lmin)-1), np.ceil(np.log10(lmax)+1)) ; levs = np.power(10, lev_exp)
+
+            cp = plt.contour (yi,xi,zi,levels=levs,linewidths=0.5,colors='black')
+            cp = plt.contourf(yi,xi,zi,levels=levs,norm=colors.LogNorm(),cmap=my_cmap) #,cmap=cm.viridis) 
+    
+            plt.colorbar(cp,format=cm_format,orientation='horizontal') ; fig.tight_layout() # upgrade plt: location='bottom'
+
+            plt.savefig(res_dir + '/%s_log.png'%field, format='png', dpi=300) ; plt.close('all')
 
     return []
 
@@ -312,7 +352,8 @@ def scatter_plots(run_dir,run_ver,res_dir,name_list):
 
                         ax.set_ylim(ymin, ymax) ; ax.set_ylabel(r'%s'%y_name) # ; ax.set_yscale('log')
 
-                        if y_name == 'Sat_ratio': ax.set_ylabel(r'Saturation ratio') ; ax.set_xscale('log')
+#                        if y_name == 'Sat_ratio': ax.set_ylabel(r'Saturation ratio') ; ax.set_xscale('log')
+                        if y_name == 'Sat_ratio': ax.set_ylabel(r'Saturation ratio') ; ax.set_yscale('log')
 
                         vmin = min(z) ; vmax = max(z) ; norm = colors.Normalize(vmin=vmin, vmax=vmax)
 
@@ -492,12 +533,15 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     
     x_exp=[] ; y_exp=[]
 
-    x_dns_2w_shrt = [] ; y_dns_2w_shrt = [] ; y_dns_2w_shrt_norm = [] ; y_dns_2w_shrt_dime = [] 
-    x_dns_2w_long = [] ; y_dns_2w_long = [] ; y_dns_2w_long_norm = [] ; y_dns_2w_long_dime = []
-    x_dns_1w_long = [] ; y_dns_1w_long = [] ; y_dns_1w_long_norm = [] ; y_dns_1w_long_dime = []
+    x_dns_3k_2w_long_oku = [] ; y_dns_3k_2w_long_oku = [] ; y_dns_3k_2w_long_norm_oku = [] ; y_dns_3k_2w_long_dime_oku = []
+    x_dns_3k_2w_long_ham = [] ; y_dns_3k_2w_long_ham = [] ; y_dns_3k_2w_long_norm_ham = [] ; y_dns_3k_2w_long_dime_ham = []
+    x_dns_6k_2w_long_oku = [] ; y_dns_6k_2w_long_oku = [] ; y_dns_6k_2w_long_norm_oku = [] ; y_dns_6k_2w_long_dime_oku = []
+    x_dns_6k_2w_long_ham = [] ; y_dns_6k_2w_long_ham = [] ; y_dns_6k_2w_long_norm_ham = [] ; y_dns_6k_2w_long_dime_ham = []
 
-    x_dns_2w_long_okuyama = [] ; y_dns_2w_long_okuyama = [] ; y_dns_2w_long_norm_okuyama = [] ; y_dns_2w_long_dime_okuyama = []
-    x_dns_2w_long_hameri  = [] ; y_dns_2w_long_hameri  = [] ; y_dns_2w_long_norm_hameri  = [] ; y_dns_2w_long_dime_hameri  = []
+    x_dns_3k_1w_long_oku = [] ; y_dns_3k_1w_long_oku = [] ; y_dns_3k_1w_long_norm_oku = [] ; y_dns_3k_1w_long_dime_oku = []
+    x_dns_3k_1w_long_ham = [] ; y_dns_3k_1w_long_ham = [] ; y_dns_3k_1w_long_norm_ham = [] ; y_dns_3k_1w_long_dime_ham = []
+    x_dns_6k_1w_long_oku = [] ; y_dns_6k_1w_long_oku = [] ; y_dns_6k_1w_long_norm_oku = [] ; y_dns_6k_1w_long_dime_oku = []
+    x_dns_6k_1w_long_ham = [] ; y_dns_6k_1w_long_ham = [] ; y_dns_6k_1w_long_norm_ham = [] ; y_dns_6k_1w_long_dime_ham = []
 
 
     Wvap = 278.34e-3 ; Wgas = 28.29e-3 ; Lref_exp = 0.00375/2. ; Lref_dns = 0.00175 # pipe dimensional radius (DNS)
@@ -532,7 +576,7 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
     for dns_dataset in file_list: 
 
-        file_d = dns_dataset ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+        name_list = ['part_number'] ; file_d = dns_dataset ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
 
         grid, mean_fields = rosie.getFields(out_f,name_list)
 
@@ -544,36 +588,88 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
         y_dns = util.ProbeAtLocation(zi, xi, yi, 0.5, 40.0) ; print "probed value is :", y_dns
 
-        if   re.match('.+okuyama', file_d): y_dns_2w_long_okuyama.append(y_dns) ; y_dns_2w_long_norm_okuyama = y_dns_2w_long_okuyama ; \
-                                            y_dns_2w_long_dime_okuyama = [(i / norm_dns )* ((0.8)**3) for i in y_dns_2w_long_norm_okuyama]
+        # better to refactor everything here with dictionaries ! ....
 
-        if   re.match('.+hameri', file_d): y_dns_2w_long_hameri.append(y_dns) ; y_dns_2w_long_norm_hameri = y_dns_2w_long_hameri ; \
-                                            y_dns_2w_long_dime_hameri = [(i / norm_dns )* ((0.8)**3) for i in y_dns_2w_long_norm_hameri]
+        if   re.match('.+okuyama', file_d):
+            if   re.match('.+long.+', file_d):
+                if   re.match('.+Re3k.+', file_d):
+                    if   re.match('.+2w.+', file_d): y_dns_3k_2w_long_oku.append(y_dns) ; y_dns_3k_2w_long_norm_oku = y_dns_3k_2w_long_oku ; \
+                                                     y_dns_3k_2w_long_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_2w_long_norm_oku]
 
-        if   re.match('.+shrt.+', file_d):
+                    elif re.match('.+1w.+', file_d): y_dns_3k_1w_long_oku.append(y_dns) ; y_dns_3k_1w_long_norm_oku = y_dns_3k_1w_long_oku ; \
+                                                     y_dns_3k_1w_long_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_1w_long_norm_oku]
 
-            if   re.match('.+0w.+', file_d): y_dns_0w_shrt.append(y_dns) ; y_dns_0w_shrt_norm = y_dns_0w_shrt ; \
-                                             y_dns_0w_shrt_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_0w_shrt_norm]
+#                    elif re.match('.+0w.+', file_d): y_dns_3k_0w_long_oku.append(y_dns) ; y_dns_3k_0w_long_norm_oku = y_dns_3k_0w_long_oku ; \
+#                                                     y_dns_3k_0w_long_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_0w_long_norm_oku]
+                elif re.match('.+Re6k.+', file_d):
+                    if   re.match('.+2w.+', file_d): y_dns_6k_2w_long_oku.append(y_dns) ; y_dns_6k_2w_long_norm_oku = y_dns_6k_2w_long_oku ; \
+                                                     y_dns_6k_2w_long_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_2w_long_norm_oku]
 
-            elif re.match('.+1w.+', file_d): y_dns_1w_shrt.append(y_dns) ; y_dns_1w_shrt_norm = y_dns_1w_shrt ; \
-                                             y_dns_1w_shrt_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_1w_shrt_norm]
+                    elif re.match('.+1w.+', file_d): y_dns_6k_1w_long_oku.append(y_dns) ; y_dns_6k_1w_long_norm_oku = y_dns_6k_1w_long_oku ; \
+                                                     y_dns_6k_1w_long_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_1w_long_norm_oku]
 
-            elif re.match('.+2w.+', file_d): y_dns_2w_shrt.append(y_dns) ; y_dns_2w_shrt_norm = y_dns_2w_shrt ; \
-                                             y_dns_2w_shrt_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_2w_shrt_norm]
+#                    elif re.match('.+0w.+', file_d): y_dns_6k_0w_long_oku.append(y_dns) ; y_dns_6k_0w_long_norm_oku = y_dns_6k_0w_long_oku ; \
+#                                                     y_dns_6k_0w_long_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_0w_long_norm_oku]
+#            elif re.match('.+shrt.+', file_d):
+#                if   re.match('.+Re3k.+', file_d):
+#                    if   re.match('.+2w.+', file_d): y_dns_3k_2w_shrt_oku.append(y_dns) ; y_dns_3k_2w_shrt_norm_oku = y_dns_3k_2w_shrt_oku ; \
+#                                                     y_dns_3k_2w_shrt_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_2w_shrt_norm_oku]
+#
+#                    elif re.match('.+1w.+', file_d): y_dns_3k_1w_shrt_oku.append(y_dns) ; y_dns_3k_1w_shrt_norm_oku = y_dns_3k_1w_shrt_oku ; \
+#                                                     y_dns_3k_1w_shrt_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_1w_shrt_norm_oku]
+#
+#                    elif re.match('.+0w.+', file_d): y_dns_3k_0w_shrt_oku.append(y_dns) ; y_dns_3k_0w_shrt_norm_oku = y_dns_3k_0w_shrt_oku ; \
+#                                                     y_dns_3k_0w_shrt_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_0w_shrt_norm_oku]
+#                elif re.match('.+Re6k.+', file_d):
+#                    if   re.match('.+2w.+', file_d): y_dns_6k_2w_shrt_oku.append(y_dns) ; y_dns_6k_2w_shrt_norm_oku = y_dns_6k_2w_shrt_oku ; \
+#                                                     y_dns_6k_2w_shrt_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_2w_shrt_norm_oku]
+#
+#                    elif re.match('.+1w.+', file_d): y_dns_6k_1w_shrt_oku.append(y_dns) ; y_dns_6k_1w_shrt_norm_oku = y_dns_6k_1w_shrt_oku ; \
+#                                                     y_dns_6k_1w_shrt_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_1w_shrt_norm_oku]
+#
+#                    elif re.match('.+0w.+', file_d): y_dns_6k_0w_shrt_oku.append(y_dns) ; y_dns_6k_0w_shrt_norm_oku = y_dns_6k_0w_shrt_oku ; \
+#                                                     y_dns_6k_0w_shrt_dime_oku = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_0w_shrt_norm_oku]
+        elif re.match('.+hameri', file_d):
+            if   re.match('.+long.+', file_d):
+                if   re.match('.+Re3k.+', file_d):
+                    if   re.match('.+2w.+', file_d): y_dns_3k_2w_long_ham.append(y_dns) ; y_dns_3k_2w_long_norm_ham = y_dns_3k_2w_long_ham ; \
+                                                     y_dns_3k_2w_long_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_2w_long_norm_ham]
 
-        elif re.match('.+long.+', file_d):
+                    elif re.match('.+1w.+', file_d): y_dns_3k_1w_long_ham.append(y_dns) ; y_dns_3k_1w_long_norm_ham = y_dns_3k_1w_long_ham ; \
+                                                     y_dns_3k_1w_long_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_1w_long_norm_ham]
 
-            if   re.match('.+0w.+', file_d): y_dns_0w_long.append(y_dns) ; y_dns_0w_long_norm = y_dns_0w_long ; \
-                                             y_dns_0w_long_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_0w_long_norm]
+#                    elif re.match('.+0w.+', file_d): y_dns_3k_0w_long_ham.append(y_dns) ; y_dns_3k_0w_long_norm_ham = y_dns_3k_0w_long_ham ; \
+#                                                     y_dns_3k_0w_long_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_0w_long_norm_ham]
+                elif re.match('.+Re6k.+', file_d):
+                    if   re.match('.+2w.+', file_d): y_dns_6k_2w_long_ham.append(y_dns) ; y_dns_6k_2w_long_norm_ham = y_dns_6k_2w_long_ham ; \
+                                                     y_dns_6k_2w_long_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_2w_long_norm_ham]
 
-            elif re.match('.+1w.+', file_d): y_dns_1w_long.append(y_dns) ; y_dns_1w_long_norm = y_dns_1w_long ; \
-                                             y_dns_1w_long_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_1w_long_norm]
+                    elif re.match('.+1w.+', file_d): y_dns_6k_1w_long_ham.append(y_dns) ; y_dns_6k_1w_long_norm_ham = y_dns_6k_1w_long_ham ; \
+                                                     y_dns_6k_1w_long_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_1w_long_norm_ham]
 
-            elif re.match('.+2w.+', file_d): y_dns_2w_long.append(y_dns) ; y_dns_2w_long_norm = y_dns_2w_long ; \
-                                             y_dns_2w_long_dime = [(i / norm_dns )* ((0.8)**3) for i in y_dns_2w_long_norm]
+#                    elif re.match('.+0w.+', file_d): y_dns_6k_0w_long_ham.append(y_dns) ; y_dns_6k_0w_long_norm_ham = y_dns_6k_0w_long_ham ; \
+#                                                     y_dns_6k_0w_long_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_0w_long_norm_ham]
+#            elif re.match('.+shrt.+', file_d):
+#                if   re.match('.+Re3k.+', file_d):
+#                    if   re.match('.+2w.+', file_d): y_dns_3k_2w_shrt_ham.append(y_dns) ; y_dns_3k_2w_shrt_norm_ham = y_dns_3k_2w_shrt_ham ; \
+#                                                     y_dns_3k_2w_shrt_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_2w_shrt_norm_ham]
+#
+#                    elif re.match('.+1w.+', file_d): y_dns_3k_1w_shrt_ham.append(y_dns) ; y_dns_3k_1w_shrt_norm_ham = y_dns_3k_1w_shrt_ham ; \
+#                                                     y_dns_3k_1w_shrt_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_1w_shrt_norm_ham]
+#
+#                    elif re.match('.+0w.+', file_d): y_dns_3k_0w_shrt_ham.append(y_dns) ; y_dns_3k_0w_shrt_norm_ham = y_dns_3k_0w_shrt_ham ; \
+#                                                     y_dns_3k_0w_shrt_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_3k_0w_shrt_norm_ham]
+#                elif re.match('.+Re6k.+', file_d):
+#                    if   re.match('.+2w.+', file_d): y_dns_6k_2w_shrt_ham.append(y_dns) ; y_dns_6k_2w_shrt_norm_ham = y_dns_6k_2w_shrt_ham ; \
+#                                                     y_dns_6k_2w_shrt_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_2w_shrt_norm_ham]
+#
+#                    elif re.match('.+1w.+', file_d): y_dns_6k_1w_shrt_ham.append(y_dns) ; y_dns_6k_1w_shrt_norm_ham = y_dns_6k_1w_shrt_ham ; \
+#                                                     y_dns_6k_1w_shrt_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_1w_shrt_norm_ham]
+#
+#                    elif re.match('.+0w.+', file_d): y_dns_6k_0w_shrt_ham.append(y_dns) ; y_dns_6k_0w_shrt_norm_ham = y_dns_6k_0w_shrt_ham ; \
+#                                                     y_dns_6k_0w_shrt_dime_ham = [(i / norm_dns )* ((0.8)**3) for i in y_dns_6k_0w_shrt_norm_ham]
 
-
-        file_d = dns_dataset.replace('prt_mean', 'flu_mean') ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+        name_list = ['Y'] ; file_d = dns_dataset.replace('prt_mean', 'flu_mean') ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
 
         grid, mean_fields = rosie.getFields(out_f,name_list)
 
@@ -585,23 +681,55 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
         x_dns = util.ProbeAtLocation(zi, xi, yi, 0.0, 0.1) ; x_dns = x_dns/(x_dns + (1-x_dns)*Wvap/Wgas)
 
-        if   re.match('.+okuyama', file_d): x_dns_2w_long_okuyama.append(x_dns)
-        if   re.match('.+hameri', file_d): x_dns_2w_long_hameri.append(x_dns)
+        # better to refactor everything here with dictionaries ! ....
 
-        if   re.match('.+shrt.+', file_d):
+        if   re.match('.+okuyama', file_d):
+            if   re.match('.+long.+', file_d):
+                if   re.match('.+Re3k.+', file_d):
+                    if   re.match('.+2w.+', file_d): x_dns_3k_2w_long_oku.append(x_dns)
+                    elif re.match('.+1w.+', file_d): x_dns_3k_1w_long_oku.append(x_dns)
+#                    elif re.match('.+0w.+', file_d): x_dns_3k_0w_long_oku.append(x_dns)
 
-            if   re.match('.+0w.+', file_d): x_dns_0w_shrt.append(x_dns)
-            elif re.match('.+1w.+', file_d): x_dns_1w_shrt.append(x_dns)
-            elif re.match('.+2w.+', file_d): x_dns_2w_shrt.append(x_dns)
+                elif re.match('.+Re6k.+', file_d):
+                    if   re.match('.+2w.+', file_d): x_dns_6k_2w_long_oku.append(x_dns)
+                    elif re.match('.+1w.+', file_d): x_dns_6k_1w_long_oku.append(x_dns)
+#                    elif re.match('.+0w.+', file_d): x_dns_6k_0w_long_oku.append(x_dns)
+#    
+#            elif re.match('.+shrt.+', file_d):
+#                if   re.match('.+Re3k.+', file_d):
+#                    if   re.match('.+2w.+', file_d): x_dns_3k_2w_shrt_oku.append(x_dns)
+#                    elif re.match('.+1w.+', file_d): x_dns_3k_1w_shrt_oku.append(x_dns)
+#                    elif re.match('.+0w.+', file_d): x_dns_3k_0w_shrt_oku.append(x_dns)
+#
+#                elif re.match('.+Re6k.+', file_d):
+#                    if   re.match('.+2w.+', file_d): x_dns_6k_2w_shrt_oku.append(x_dns)
+#                    elif re.match('.+1w.+', file_d): x_dns_6k_1w_shrt_oku.append(x_dns)
+#                    elif re.match('.+0w.+', file_d): x_dns_6k_0w_shrt_oku.append(x_dns)
 
-        elif re.match('.+long.+', file_d):
+        elif re.match('.+hameri', file_d):
+            if   re.match('.+long.+', file_d):
+                if   re.match('.+Re3k.+', file_d):
+                    if   re.match('.+2w.+', file_d): x_dns_3k_2w_long_ham.append(x_dns)
+                    elif re.match('.+1w.+', file_d): x_dns_3k_1w_long_ham.append(x_dns)
+#                    elif re.match('.+0w.+', file_d): x_dns_3k_0w_long_ham.append(x_dns)
 
-            if   re.match('.+0w.+', file_d): x_dns_0w_long.append(x_dns)
-            elif re.match('.+1w.+', file_d): x_dns_1w_long.append(x_dns)
-            elif re.match('.+2w.+', file_d): x_dns_2w_long.append(x_dns)
-
-
-    fig = plt.figure(figsize=(12, 6))
+                elif re.match('.+Re6k.+', file_d):
+                    if   re.match('.+2w.+', file_d): x_dns_6k_2w_long_ham.append(x_dns)
+                    elif re.match('.+1w.+', file_d): x_dns_6k_1w_long_ham.append(x_dns)
+#                    elif re.match('.+0w.+', file_d): x_dns_6k_0w_long_ham.append(x_dns)
+#        
+#            elif re.match('.+shrt.+', file_d):
+#                if   re.match('.+Re3k.+', file_d):
+#                    if   re.match('.+2w.+', file_d): x_dns_3k_2w_shrt_ham.append(x_dns)
+#                    elif re.match('.+1w.+', file_d): x_dns_3k_1w_shrt_ham.append(x_dns)
+#                    elif re.match('.+0w.+', file_d): x_dns_3k_0w_shrt_ham.append(x_dns)
+#
+#                elif re.match('.+Re6k.+', file_d):
+#                    if   re.match('.+2w.+', file_d): x_dns_6k_2w_shrt_ham.append(x_dns)
+#                    elif re.match('.+1w.+', file_d): x_dns_6k_1w_shrt_ham.append(x_dns)
+#                    elif re.match('.+0w.+', file_d): x_dns_6k_0w_shrt_ham.append(x_dns)
+        
+    fig = plt.figure(figsize=(12, 6)) ; markers_size = 50.0
 
     ###############################################################
     
@@ -613,16 +741,19 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
     ax_dime.set_xlim(xmin_dime, xmax_dime) ; ax_dime.set_ylim(ymin_dime, ymax_dime)
     
-    plt.scatter(x_exp      , y_exp_dime      , c='b')#, label='experiments ')
-##    plt.scatter(x_dns_2w_shrt, y_dns_2w_shrt_dime, c='r', label='2w DNS short')
-#    plt.scatter(x_dns_2w_long, y_dns_2w_long_dime, c='m', label='2w DNS long ')
-##    plt.scatter(x_dns_1w_long, y_dns_1w_long_dime, c='g', label='1w DNS long ')
+    plt.scatter(x_exp, y_exp_dime, s=markers_size, c='b')#, label='experiments ')
 
-    plt.scatter(x_dns_2w_long_okuyama, y_dns_2w_long_dime_okuyama, c='orange', label='2w DNS long Okuyama')
-    plt.scatter(x_dns_2w_long_hameri,  y_dns_2w_long_dime_hameri,  c='red',    label='2w DNS long Hameri')
+    plt.scatter(x_dns_3k_2w_long_oku, y_dns_3k_2w_long_dime_oku, s=markers_size, c='r', marker='s', label='2w Re 3k Okuyama')
+    plt.scatter(x_dns_3k_2w_long_ham, y_dns_3k_2w_long_dime_ham, s=markers_size, c='g', marker='s')#, label='2w Re 3k Hameri')
+
+    plt.scatter(x_dns_3k_1w_long_oku, y_dns_3k_1w_long_dime_oku, s=markers_size, c='r', marker='v', label='1w Re 3k Okuyama')
+    plt.scatter(x_dns_3k_1w_long_ham, y_dns_3k_1w_long_dime_ham, s=markers_size, c='g', marker='v')#, label='1w Re 3k Hameri')
+
+    plt.scatter(x_dns_6k_2w_long_oku, y_dns_6k_2w_long_dime_oku, s=markers_size, c='r', marker='D', label='2w Re 6k Okuyama')
+    plt.scatter(x_dns_6k_2w_long_ham, y_dns_6k_2w_long_dime_ham, s=markers_size, c='g', marker='D')#, label='2w Re 6k Hameri')
     
-#    plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('dimensional results')
-    plt.grid(True) ; plt.legend(loc="upper left") ; plt.title('dimensional results')
+    plt.grid(True) ; plt.title('dimensional results') ; plt.legend(loc="lower right")
+#    plt.grid(True) ; plt.legend(loc="upper left") ; plt.title('dimensional results')
     
     plt.xlabel('DBP inlet molar-franction') ; plt.ylabel('Particle Number Density (#/cc)')
     
@@ -640,16 +771,19 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
     ax_norm.set_xlim(xmin_norm, xmax_norm) ; ax_norm.set_ylim(ymin_norm, ymax_norm)
     
-    plt.scatter(x_exp      , y_exp_norm      , c='b')#, label='experiments ')
-##    plt.scatter(x_dns_2w_shrt, y_dns_2w_shrt_norm, c='r', label='2w DNS short')
-#    plt.scatter(x_dns_2w_long, y_dns_2w_long_norm, c='m', label='2w DNS long ')
-##    plt.scatter(x_dns_1w_long, y_dns_1w_long_norm, c='g', label='1w DNS long ')
+    plt.scatter(x_exp, y_exp_norm, s=markers_size, c='b')#, label='experiments ')
 
-    plt.scatter(x_dns_2w_long_okuyama, y_dns_2w_long_norm_okuyama, c='orange', label='2w DNS long Okuyama')
-    plt.scatter(x_dns_2w_long_hameri,  y_dns_2w_long_norm_hameri,  c='red',    label='2w DNS long Hameri')
+    plt.scatter(x_dns_3k_2w_long_oku, y_dns_3k_2w_long_norm_oku, s=markers_size, c='r', marker='s', label='2w Re 3k Okuyama')
+    plt.scatter(x_dns_3k_2w_long_ham, y_dns_3k_2w_long_norm_ham, s=markers_size, c='g', marker='s', label='2w Re 3k Hameri')
+
+    plt.scatter(x_dns_3k_1w_long_oku, y_dns_3k_1w_long_norm_oku, s=markers_size, c='r', marker='v', label='1w Re 3k Okuyama')
+    plt.scatter(x_dns_3k_1w_long_ham, y_dns_3k_1w_long_norm_ham, s=markers_size, c='g', marker='v', label='1w Re 3k Hameri')
+
+    plt.scatter(x_dns_6k_2w_long_oku, y_dns_6k_2w_long_norm_oku, s=markers_size, c='r', marker='D', label='2w Re 6k Okuyama')
+    plt.scatter(x_dns_6k_2w_long_ham, y_dns_6k_2w_long_norm_ham, s=markers_size, c='g', marker='D', label='2w Re 6k Hameri')
     
-#    plt.grid(True) ; plt.legend(loc="lower right") ; plt.title('non-dimensional results')
-    plt.grid(True) ; plt.legend(loc="upper left") ; plt.title('non-dimensional results')
+    plt.grid(True) ; plt.title('non-dimensional results') #; plt.legend(loc="lower right")
+#    plt.grid(True) ; plt.legend(loc="upper left") ; plt.title('non-dimensional results')
     
     plt.xlabel('DBP inlet molar-franction') ; plt.ylabel('Particle Number Density (#/dV)')
     
@@ -910,55 +1044,55 @@ def Jrate_sigma(run_dir,run_ver,res_dir):
             if re.match('%sJE*.*.vtk'%run_ver, filename):
     
                 file_d = run_dir + '%s'%(filename) ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
-           
+                
                 grid, inst_fields = rosie.getFields(out_f,name_list)
-    
+                
                 Y_vap = inst_fields['Y_vapour'] ; Tempera = inst_fields['Temperature'] ; Rho = inst_fields['Rho']
-
-
+                
+                
                 X_sat = [np.exp((Lat_heat/Runi)*(1./theta_boi - 1./(theta*theta_ref))) for theta in Tempera] 
-
+                
                 Y_sat = [X/(X + (1-X)*Wgas/Wvap) for X in X_sat]
                 X_vap = [Y/(Y + (1-Y)*Wvap/Wgas) for Y in Y_vap]
 
-		Sat_R = np.divide(X_vap , X_sat)
-
-    		print ''
-		print 'calculated X_vap min/max', np.amin(X_vap), np.amax(X_vap)
-		print 'calculated X_sat min/max', np.amin(X_sat), np.amax(X_sat)
-		print 'calculated Sat_R min/max', np.amin(Sat_R), np.amax(Sat_R)
-    		print ''
-
-		Sigma_Okuyama = np.array([1.e-3*(35.30 - 0.0863*(theta*theta_ref - theta_zero)) for theta in Tempera])
-		Sigma_Bedanov = np.array([1.e-3*(35.72 - 0.0894*(theta*theta_ref - theta_zero)) for theta in Tempera])
-
-		theta_crit = 781. ; Sigma_AIChE   = np.array([0.059663*(1. - theta*theta_ref/theta_crit)**1.2457 for theta in Tempera])
-		theta_crit = 784. ; Sigma_Ambrose = np.array([0.059663*(1. - theta*theta_ref/theta_crit)**1.2457 for theta in Tempera])
-		theta_crit = 823. ; Sigma_Hameri  = np.array([0.059663*(1. - theta*theta_ref/theta_crit)**1.2457 for theta in Tempera])
-
-		Jrate_AIChE    = Jrate(Rho, Y_vap, Sigma_AIChE  , Tempera, Sat_R)
-		Jrate_Ambrose  = Jrate(Rho, Y_vap, Sigma_Ambrose, Tempera, Sat_R)
-		Jrate_Okuyama  = Jrate(Rho, Y_vap, Sigma_Okuyama, Tempera, Sat_R)
-		Jrate_Bedanov  = Jrate(Rho, Y_vap, Sigma_Bedanov, Tempera, Sat_R)
-		Jrate_Hameri   = Jrate(Rho, Y_vap, Sigma_Hameri , Tempera, Sat_R)
-
-    		print ''
-    		print 'Jrate_AIChE   min/max', np.amin(Jrate_AIChE  ), np.amax(Jrate_AIChE  )
-    		print 'Jrate_Ambrose min/max', np.amin(Jrate_Ambrose), np.amax(Jrate_Ambrose)
-    		print 'Jrate_Okuyama min/max', np.amin(Jrate_Okuyama), np.amax(Jrate_Okuyama)
-    		print 'Jrate_Bedanov min/max', np.amin(Jrate_Bedanov), np.amax(Jrate_Bedanov)
-    		print 'Jrate_Hameri  min/max', np.amin(Jrate_Hameri ), np.amax(Jrate_Hameri )
-    		print ''
-
+                Sat_R = np.divide(X_vap , X_sat)
+                
+                print ''
+                print 'calculated X_vap min/max', np.amin(X_vap), np.amax(X_vap)
+                print 'calculated X_sat min/max', np.amin(X_sat), np.amax(X_sat)
+                print 'calculated Sat_R min/max', np.amin(Sat_R), np.amax(Sat_R)
+                print ''
+                
+                Sigma_Okuyama = np.array([1.e-3*(35.30 - 0.0863*(theta*theta_ref - theta_zero)) for theta in Tempera])
+                Sigma_Bedanov = np.array([1.e-3*(35.72 - 0.0894*(theta*theta_ref - theta_zero)) for theta in Tempera])
+                
+                theta_crit = 781. ; Sigma_AIChE   = np.array([0.059663*(1. - theta*theta_ref/theta_crit)**1.2457 for theta in Tempera])
+                theta_crit = 784. ; Sigma_Ambrose = np.array([0.059663*(1. - theta*theta_ref/theta_crit)**1.2457 for theta in Tempera])
+                theta_crit = 823. ; Sigma_Hameri  = np.array([0.059663*(1. - theta*theta_ref/theta_crit)**1.2457 for theta in Tempera])
+                
+                Jrate_AIChE    = Jrate(Rho, Y_vap, Sigma_AIChE  , Tempera, Sat_R)
+                Jrate_Ambrose  = Jrate(Rho, Y_vap, Sigma_Ambrose, Tempera, Sat_R)
+                Jrate_Okuyama  = Jrate(Rho, Y_vap, Sigma_Okuyama, Tempera, Sat_R)
+                Jrate_Bedanov  = Jrate(Rho, Y_vap, Sigma_Bedanov, Tempera, Sat_R)
+                Jrate_Hameri   = Jrate(Rho, Y_vap, Sigma_Hameri , Tempera, Sat_R)
+                
+                print ''
+                print 'Jrate_AIChE   min/max', np.amin(Jrate_AIChE  ), np.amax(Jrate_AIChE  )
+                print 'Jrate_Ambrose min/max', np.amin(Jrate_Ambrose), np.amax(Jrate_Ambrose)
+                print 'Jrate_Okuyama min/max', np.amin(Jrate_Okuyama), np.amax(Jrate_Okuyama)
+                print 'Jrate_Bedanov min/max', np.amin(Jrate_Bedanov), np.amax(Jrate_Bedanov)
+                print 'Jrate_Hameri  min/max', np.amin(Jrate_Hameri ), np.amax(Jrate_Hameri )
+                print ''
+                
                 sc = sc_Jrat.scatter(Sigma_AIChE  , Jrate_AIChE  , s=0.5, c='green' , alpha=1., edgecolors='none', rasterized=True, label='AIChE  ')
                 sc = sc_Jrat.scatter(Sigma_Ambrose, Jrate_Ambrose, s=0.5, c='orange', alpha=1., edgecolors='none', rasterized=True, label='Ambrose')
                 sc = sc_Jrat.scatter(Sigma_Okuyama, Jrate_Okuyama, s=0.5, c='blue'  , alpha=1., edgecolors='none', rasterized=True, label='Okuyama')
                 sc = sc_Jrat.scatter(Sigma_Bedanov, Jrate_Bedanov, s=0.5, c='red'   , alpha=1., edgecolors='none', rasterized=True, label='Bedanov')
                 sc = sc_Jrat.scatter(Sigma_Hameri , Jrate_Hameri , s=0.5, c='black' , alpha=1., edgecolors='none', rasterized=True, label='Hameri ')
 
-	plt.grid(True) ; plt.legend(loc="upper left", markerscale=5., scatterpoints=1, fontsize=10) ; plt.title('non-dimensional Nucleation rates varying the Surface tension')
-
-	sc_Jrat.set_xlabel('Surface tension [N/m]') ; sc_Jrat.set_ylabel('Nucleation rate [#]')
+        plt.grid(True) ; plt.legend(loc="upper left", markerscale=5., scatterpoints=1, fontsize=10) ; plt.title('non-dimensional Nucleation rates varying the Surface tension')
+        
+        sc_Jrat.set_xlabel('Surface tension [N/m]') ; sc_Jrat.set_ylabel('Nucleation rate [#]')
 	
         plt.savefig(res_dir + '/scatter_Jrate_Sigma.png', format='png', dpi=300) ; plt.close('all')
 
