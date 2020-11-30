@@ -35,6 +35,7 @@ To backport it's quite an easy task, according to [the guide](https://medium.com
 git stash ; wrk_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
 git remote add -f pigcasso https://github.com/andreagalle/pigcasso.git
 git checkout -b oink pigcasso/backport
+git pull pigcasso backport
 git cherry-pick -x --strategy=subtree $wrk_branch && git show HEAD --stat
 git push pigcasso oink:backport
 git checkout $wrk_branch && git stash apply
