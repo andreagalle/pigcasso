@@ -45,7 +45,7 @@ def getFields(out_f,fields_names):
             if np.shape(field_array)[1] == 3:
             
                 field_array_comp = field_array[:,2]
-            	fields_dictionary.update({field_name + '_z': field_array_comp})
+                fields_dictionary.update({field_name + '_z': field_array_comp})
             
             field_array_magn = np.linalg.norm(field_array,axis=1)
             fields_dictionary.update({field_name + '_m': field_array_magn})
@@ -75,16 +75,16 @@ def getOutputVTKwithPointDataFromFile(fileName):
     """
 
     # function display 
-    print '\n---- DAEPy::getOutputVTKwithPointDataFromFile ----'
+    print ('\n---- DAEPy::getOutputVTKwithPointDataFromFile ----')
     
     # test if the file exists
-    print '\n--> Reading', fileName
+    print ('\n--> Reading', fileName)
     if not os.path.isfile(fileName):
         raise ValueError("Error : file does not exists")
 
     extension = os.path.splitext(fileName)[-1]
     if extension == '.vtu':
-        reader = vtk.vtkXMLUnstructuredGridReader()
+        reader = vtk.vtkUnstructuredGridReader()
     elif extension == '.vtk':
         reader = vtk.vtkStructuredGridReader()
     elif extension == '.pvtu':
@@ -98,10 +98,11 @@ def getOutputVTKwithPointDataFromFile(fileName):
     else:
         raise ValueError("Error: unknown extension of file " + fileName)
 
+#    reader.Initialize()
     reader.SetFileName(fileName)
 
     reader.ReadAllScalarsOn()
-    reader.ReadAllVectorsOn()
+#    reader.ReadAllVectorsOn()
 
     reader.Update()
     data_outVTK = reader.GetOutput()
@@ -116,13 +117,13 @@ def getOutputVTKwithPointDataFromFile(fileName):
 
     n_fields = data_outVTK.GetPointData().GetNumberOfArrays()
 
-    print '\n--> Available:', n_fields, 'fields\n'
+    print ('\n--> Available:', n_fields, 'fields\n')
 
     for i in range(n_fields):
-        print '        -', data_outVTK.GetPointData().GetArrayName(i)
+        print ('        -', data_outVTK.GetPointData().GetArrayName(i))
 
 
-    print ''
+    print ('')
     return data_outVTK
 
 
@@ -148,7 +149,7 @@ def getArrayFromPointData(data_outVTK, field_name):
     """
 
     # function display 
-    print '\n---- DAEPy::getArrayFromPointData ----'
+    print ('\n---- DAEPy::getArrayFromPointData ----')
 
     coord = np.array(
         [data_outVTK.GetPoint(i) for i in range(data_outVTK.GetNumberOfPoints())],
@@ -157,17 +158,17 @@ def getArrayFromPointData(data_outVTK, field_name):
 
     if isinstance(field_name, list):
         for f in field_name:
-            print '\n--> extract fields', f
+            print ('\n--> extract fields', f)
             data_arr = [vtk_to_numpy(data_outVTK.GetPointData().GetArray(f)) for f in field_name]
     else:
-        print '\n--> extract field', field_name
+        print ('\n--> extract field', field_name)
         data_arr = vtk_to_numpy(data_outVTK.GetPointData().GetArray(field_name))
 
 #    print '\n--> extract fields', [f for f in field_name]
 #    data_arr = [vtk_to_numpy(data_outVTK.GetPointData().GetArray(f)) for f in field_name]
 
 
-    print ''
+    print ('')
 #    return [coord] + data_arr
     return [coord , data_arr]
 
@@ -199,25 +200,25 @@ def getSlice(data_outVTK, orig, nor):
     """
 
     #function display
-    print '---- DAEPy::getSlice ----'
+    print ('---- DAEPy::getSlice ----')
 
     # Plane of the Slice
     plane = vtk.vtkPlane()
     plane.SetOrigin(orig)
     plane.SetNormal(nor)
-    print '--> normal used to slice: ', nor
+    print ('--> normal used to slice: ', nor)
 
     # Cutter plane
     planeCut = vtk.vtkCutter()
-    planeCut.SetInputData(data_outVTK) # VTK6 SetInput() repl. with SetInputData() vtk.org/Wiki/VTK/VTK_6_Migration/Replacement_of_SetInput
-#    planeCut.SetInput(data_outVTK)    # sometimes to switch one another
+#    planeCut.SetInputData(data_outVTK) # VTK6 SetInput() repl. with SetInputData() vtk.org/Wiki/VTK/VTK_6_Migration/Replacement_of_SetInput
+    planeCut.SetInput(data_outVTK)    # sometimes to switch one another
     planeCut.SetCutFunction(plane)
 
     # Make the slice
     planeCut.Update()
     slice_outVTK = planeCut.GetOutput()
 
-    print ''
+    print ('')
     return slice_outVTK
 
 
@@ -244,20 +245,20 @@ def getFieldsFromSlice(field_slice,fields_names):
 
         if field_array.ndim > 1:
 
-	    field_array_comp = field_array[:,0]
+            field_array_comp = field_array[:,0]
             fields_dictionary.update({field_name + '_t': field_array_comp})
-	    field_array_comp = field_array[:,1]
+            field_array_comp = field_array[:,1]
             fields_dictionary.update({field_name + '_r': field_array_comp})
 
             if np.shape(field_array)[1] == 3:
 		
-	    	field_array_comp = field_array[:,2]
-            	fields_dictionary.update({field_name + '_z': field_array_comp})
+                field_array_comp = field_array[:,2]
+                fields_dictionary.update({field_name + '_z': field_array_comp})
 
-	    field_array_magn = np.linalg.norm(field_array,axis=1)
+            field_array_magn = np.linalg.norm(field_array,axis=1)
             fields_dictionary.update({field_name + '_m': field_array_magn})
 
-	else:
+        else:
             fields_dictionary.update({field_name : field_array})
 
     return GridCoords, fields_dictionary

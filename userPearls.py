@@ -54,7 +54,8 @@ def statistics(run_directory,run_version,res_directory):
 #    profile_plots     (run_directory, "pvap_pdf",             run_version, res_directory, fields_list)
 #    profile_plots     (run_directory, "pexp_pdf",             run_version, res_directory, fields_list)
 #    profile_plots     (run_directory, "pvol_pdf",             run_version, res_directory, fields_list)
-#    scatter_plots     (run_directory,                         run_version, res_directory, fields_list)
+    scatter_plots     (run_directory, "JE",                   run_version, res_directory, fields_list)
+    scatter_plots     (run_directory, "SL",                   run_version, res_directory, fields_list)
     norm_profile_plots(run_directory, "fra_mean", "fcl_mean", run_version, res_directory)
 
 #     run_directory = "cfr-pdf-rad/"
@@ -309,13 +310,14 @@ def profile_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
 "#################### MEAN SCATTER PLOT ####################" 
 
-def scatter_plots(run_dir,run_ver,res_dir,name_list):
+def scatter_plots(run_dir,run_out,run_ver,res_dir,name_list):
                 
     res_dir  = res_dir + '/2D_scatter/'
                     
     if util.chk_dir(res_dir) == False: os.makedirs(res_dir) 
 
-    z_name_list  = ['J_rate','Rho'] ; xy_name_list = ['Temperature','Sat_ratio','Y_vapour','Rho']
+#    z_name_list  = ['J_rate','Rho'] ; xy_name_list = ['Temperature','Sat_ratio','Y_vapour','Rho']
+    z_name_list  = ['Sat_ratio'] ; xy_name_list = ['Y_vapour','Temperature']
 
     for z_name in z_name_list:
         
@@ -323,7 +325,7 @@ def scatter_plots(run_dir,run_ver,res_dir,name_list):
 
             x_name = xy_name[0] ; y_name = xy_name[1]
 
-            if x_name == z_name or y_name == z_name: continue
+#            if x_name == z_name or y_name == z_name: continue
 
             fig = plt.figure(figsize=(8, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
                 
@@ -333,39 +335,42 @@ def scatter_plots(run_dir,run_ver,res_dir,name_list):
             
                 for filename in files:
 
-                    if re.match('%sJE*.*.vtk'%run_ver, filename):
+#                    if re.match('%s%s*.*.vtk'%(run_ver,run_out), filename):
+                    if re.match('%s%s*.*.vt.'%(run_ver,run_out), filename):
             
                         file_d = run_dir + '%s'%(filename) ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
-                   
+                        
                         grid, inst_fields = rosie.getFields(out_f,name_list)
-            
+                        
                         x = inst_fields[x_name] ; y = inst_fields[y_name] ; z = inst_fields[z_name]
 
 #                        if x_name == 'Y_vapour' or x_name == 'Temperature': x  = (x - min(x))/(max(x) - min(x)) # to restore asap 
 #                        if y_name == 'Y_vapour' or y_name == 'Temperature': y  = (y - min(y))/(max(y) - min(y)) # to restore asap
                                         
                         xmin, xmax = min(x), max(x) # xmin, xmax = 1.e-3, 1.  
-
+                        
                         ax.set_xlim(xmin, xmax) ; ax.set_xlabel(r'%s'%x_name)
-
+                        
                         ymin, ymax = min(y), max(y) # ymin, ymax = 1.e-3, 2.e+3 
-
+                        
                         ax.set_ylim(ymin, ymax) ; ax.set_ylabel(r'%s'%y_name) # ; ax.set_yscale('log')
 
 #                        if y_name == 'Sat_ratio': ax.set_ylabel(r'Saturation ratio') ; ax.set_xscale('log')
                         if y_name == 'Sat_ratio': ax.set_ylabel(r'Saturation ratio') ; ax.set_yscale('log')
-
+                        
                         vmin = min(z) ; vmax = max(z) ; norm = colors.Normalize(vmin=vmin, vmax=vmax)
-
-                        if   z_name in ['Rate_nucl','J_rate','Crit_rad']:
-                       
+                        
+                        if z_name in ['Rate_nucl','J_rate','Crit_rad']:
+                        
                             if   z_name == 'Rate_nucl': vmin = 1.0e-16 ; vmax = 1.0e-4
                             elif z_name == 'J_rate':    vmin = 1.0e-6  ; vmax = 1.0e+2
                             elif z_name == 'Crit_rad':  vmin = 1.0e-8
-
+                        
                             norm = colors.LogNorm  (vmin=vmin, vmax=vmax)
                                         
                         sc = plt.scatter(x, y, s=0.05, c=z, norm=norm, alpha=1.0, linewidths=0.0, edgecolors='face', rasterized=True, cmap = plt.cm.get_cmap('jet', 8))
+
+#                        break   #prevent decending into subfolders
 
                 cbar = plt.colorbar(sc) ; cbar.set_label('%s'%z_name, rotation=270, labelpad=20)
 

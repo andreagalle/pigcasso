@@ -41,7 +41,7 @@ def snapshots(run_dir,run_ver,res_dir,fn_head,name_list):
 
             if re.match('%s%s*.*.vtk'%(run_ver,fn_head), filename):
 
-                print '\n--> looking for %s'%filename 
+                print ('\n--> looking for %s'%filename) 
     
                 filename = filename.lstrip('%s%s'%(run_ver,fn_head))
                 filename = filename.rstrip('.vtk')
@@ -53,7 +53,7 @@ def snapshots(run_dir,run_ver,res_dir,fn_head,name_list):
 
         break   #prevent decending into subfolders
     
-    print '\n--> last field found: %s'%last_field 
+    print ('\n--> last field found: %s'%last_field) 
 
     for root, dirs, files in os.walk("%s"%run_dir):
     
@@ -64,35 +64,35 @@ def snapshots(run_dir,run_ver,res_dir,fn_head,name_list):
                 zonename = filename.lstrip('%s'%run_ver)
                 zonename = filename.rstrip('%s.vtk'%last_field)
 
-                print '\n--> zone found: %s'%zonename 
+                print ('\n--> zone found: %s'%zonename) 
 
-            	zones_dictionary.update({zonename : filename})
+                zones_dictionary.update({zonename : filename})
 
         break   #prevent decending into subfolders
 
     for zone in zones_dictionary:   
 
-    	file_d = '%s'%run_dir + zones_dictionary[zone] ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
-
-    	inst_slice = rosie.getSlice(out_f, orig, norm) ; print '\n--> Slicing %s'%file_d 
-
-    	grid, inst_fields = rosie.getFieldsFromSlice(inst_slice,name_list)
-
+        file_d = '%s'%run_dir + zones_dictionary[zone] ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+        
+        inst_slice = rosie.getSlice(out_f, orig, norm) ; print ('\n--> Slicing %s'%file_d) 
+        
+        grid, inst_fields = rosie.getFieldsFromSlice(inst_slice,name_list)
+        
         zones_fields.update({zone : [grid, inst_fields]})
 
     fields_list = []
 
     for zone in zones_fields:   
 
-	[grid, inst_fields] = zones_fields[zone]
+        [grid, inst_fields] = zones_fields[zone]
 
-    	fields_list = list(set().union(fields_list, list(inst_fields.keys())))
+        fields_list = list(set().union(fields_list, list(inst_fields.keys())))
     
     nptsx, nptsy = 1000, 2000 ; zmin, zmax = 0.0, 0.0
 
     for field in fields_list:   
 
-	print '\n--> plotting field %s'%field
+        print ('\n--> plotting field %s'%field)
 
         fig = plt.figure(figsize=(5, 8)) ; ax = fig.add_subplot(111)
 
@@ -134,11 +134,11 @@ def snapshots(run_dir,run_ver,res_dir,fn_head,name_list):
                     
                     lmin = np.nanmin(z) ; lmax = np.nanmax(z)
             
-            	zi = griddata((x, y), z, (xi, yi), method='linear')
+                zi = griddata((x, y), z, (xi, yi), method='linear')
             
-            	if   field in nan_list: zi = np.nan_to_num(zi)#, nan=-9999) # need upgrade numpy 
-
-            	if zone == '%sJE'%run_ver : zpipe = util.ProbeAtLocation(zi, xi, yi, 0.0, 0.1)
+                if   field in nan_list: zi = np.nan_to_num(zi)#, nan=-9999) # need upgrade numpy 
+                
+                if zone == '%sJE'%run_ver : zpipe = util.ProbeAtLocation(zi, xi, yi, 0.0, 0.1)
 
             else:
 
