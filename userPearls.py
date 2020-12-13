@@ -4,6 +4,8 @@
 userPearls.py
 """
 
+from __future__        import print_function
+
 import os, sys, re, copy, csv #, math, shutil, fnmatch
 import dataManagement as rosie
 import toolCase as util
@@ -18,8 +20,8 @@ import matplotlib
 matplotlib.rcParams['backend'] = 'Agg' # configure backend here
 
 from scipy.interpolate import griddata #, interpn, interp2d
-from matplotlib import colors
-from itertools import combinations 
+from matplotlib        import colors
+from itertools         import combinations 
 
 sys.dont_write_bytecode = True
 
@@ -103,7 +105,7 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
     for field in mean_fields:   
 
-        print '\n--> plotting field %s'%field
+        print ('\n--> plotting field %s'%field)
 
         fig = plt.figure(figsize=(9, 3)) ; ax = fig.add_subplot(111)
 
@@ -260,7 +262,7 @@ def profile_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
     for field in mean_fields:   
 
-        print '\n--> plotting field %s'%field
+        print ('\n--> plotting field %s'%field)
 
         fig = plt.figure(figsize=(10, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
         
@@ -463,11 +465,11 @@ def cfr_profile_plots(run_dir,run_out,run_ver,res_dir):
 
             if re.match('%s%s*.*.vtk'%(run_ver,run_out), filename):
 
-                print '\n--> looking for %s'%filename 
+                print ('\n--> looking for %s'%filename) 
 
                 fname_end = filename.split("_") ; prof_case = fname_end[-1] ; prof_case = prof_case.rstrip('.vtk')
 
-                print '\n--> case %s'%prof_case 
+                print ('\n--> case %s'%prof_case) 
 
                 file_d = run_dir + '%s'%(filename) ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
 
@@ -561,7 +563,7 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
             if re.match('%s'%exp_dataset, filename):
     
-                exp_dataset = '%s'%os.path.join(root, filename); print '\n--> Reading', exp_dataset
+                exp_dataset = '%s'%os.path.join(root, filename); print ('\n--> Reading', exp_dataset)
 #                break   #prevent decending into subfolders
     
                 with open(exp_dataset, 'r') as csvfile:
@@ -591,7 +593,7 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
         z = mean_fields['part_number'] ; zi = griddata((x, y), z, (xi, yi), method='linear')
 
-        y_dns = util.ProbeAtLocation(zi, xi, yi, 0.5, 40.0) ; print "probed value is :", y_dns
+        y_dns = util.ProbeAtLocation(zi, xi, yi, 0.5, 40.0) ; print ("probed value is :", y_dns)
 
         # better to refactor everything here with dictionaries ! ....
 
@@ -942,10 +944,10 @@ def mdot_HKvsMA(run_dir,run_ver,res_dir):
                     mdot_HK = abs((alpha/ Ma)*(R**2)  *np.sqrt(8. * np.pi/Rvap) *np.multiply(sqrtInvTempera,np.subtract(X_vap,X_sat)))
                     rdot_HK = abs((alpha/(Ma*rho_liq))*np.sqrt(0.5/(np.pi*Rvap))*np.multiply(sqrtInvTempera,np.subtract(X_vap,X_sat)))
 
-		    print 'min/max MA m_dot : ', np.amin(mdot_MA), np.amax(mdot_MA)
-		    print 'min/max MA r_dot : ', np.amin(rdot_MA), np.amax(rdot_MA)
-		    print 'min/max HK m_dot : ', np.amin(mdot_HK), np.amax(mdot_HK)
-		    print 'min/max HK r_dot : ', np.amin(rdot_HK), np.amax(rdot_HK)
+		    print ('min/max MA m_dot : ', np.amin(mdot_MA), np.amax(mdot_MA))
+		    print ('min/max MA r_dot : ', np.amin(rdot_MA), np.amax(rdot_MA))
+		    print ('min/max HK m_dot : ', np.amin(mdot_HK), np.amax(mdot_HK))
+		    print ('min/max HK r_dot : ', np.amin(rdot_HK), np.amax(rdot_HK))
 
 		    Rp.fill(R*1.05)
 
@@ -957,7 +959,7 @@ def mdot_HKvsMA(run_dir,run_ver,res_dir):
 		    sc_mdot.scatter(Rp, mdot_HK, s=1.0, c='r', alpha=1.e-2, edgecolors='none', rasterized=True)
 		    sc_rdot.scatter(Rp, rdot_HK, s=1.0, c='r', alpha=1.e-2, edgecolors='none', rasterized=True)
 
-                    print 'radius : ', R , ' number : ', number ; number += 1 
+                    print ('radius : ', R , ' number : ', number) ; number += 1
 
 
                 R_cross = [] ; R_cross = np.divide( abs(Sh/(Re*Sc)/(2.)*np.subtract(Y_vap,Y_sat)) , abs((alpha/Ma)*np.sqrt(1./(2.*np.pi*Rvap))*np.multiply(sqrtInvTempera,np.subtract(X_vap,X_sat))) ) 
@@ -1006,8 +1008,8 @@ def Jrate(Rho, Y_vap, Sigma, Tempera, Sat_R):
     b_1 = np.power(np.divide(Sigma   , Tempera*theta_ref) , 3)
     b_2 = np.power(np.log(Sup_S), -2)
 
-    print 'a_0 min/max', np.amin(a_0), np.amax(a_0), 'a_1 min/max', np.amin(a_1), np.amax(a_1), 'a_2 min/max', np.amin(a_2), np.amax(a_2)
-    print 'b_0 min/max', np.amin(b_0), np.amax(b_0), 'b_1 min/max', np.amin(b_1), np.amax(b_1), 'b_2 min/max', np.amin(b_2), np.amax(b_2)
+    print ('a_0 min/max', np.amin(a_0), np.amax(a_0), 'a_1 min/max', np.amin(a_1), np.amax(a_1), 'a_2 min/max', np.amin(a_2), np.amax(a_2))
+    print ('b_0 min/max', np.amin(b_0), np.amax(b_0), 'b_1 min/max', np.amin(b_1), np.amax(b_1), 'b_2 min/max', np.amin(b_2), np.amax(b_2))
 
     J= np.zeros_like(Sat_R) ; J[Sat_R > SupSat] = np.exp(a_0 + a_1 + a_2 + ( - b_0*b_1*b_2))
 
@@ -1015,10 +1017,10 @@ def Jrate(Rho, Y_vap, Sigma, Tempera, Sat_R):
 
     J[J <= 1.e-16] = 0.
 
-    print ''
-    print 'Sigma min/max', np.amin(Sigma), np.amax(Sigma)
-    print 'Jrate min/max', np.amin(J), np.amax(J)
-    print ''
+    print ('')
+    print ('Sigma min/max', np.amin(Sigma), np.amax(Sigma))
+    print ('Jrate min/max', np.amin(J), np.amax(J))
+    print ('')
 
     return J 
 
@@ -1062,11 +1064,11 @@ def Jrate_sigma(run_dir,run_ver,res_dir):
 
                 Sat_R = np.divide(X_vap , X_sat)
                 
-                print ''
-                print 'calculated X_vap min/max', np.amin(X_vap), np.amax(X_vap)
-                print 'calculated X_sat min/max', np.amin(X_sat), np.amax(X_sat)
-                print 'calculated Sat_R min/max', np.amin(Sat_R), np.amax(Sat_R)
-                print ''
+                print ('')
+                print ('calculated X_vap min/max', np.amin(X_vap), np.amax(X_vap))
+                print ('calculated X_sat min/max', np.amin(X_sat), np.amax(X_sat))
+                print ('calculated Sat_R min/max', np.amin(Sat_R), np.amax(Sat_R))
+                print ('')
                 
                 Sigma_Okuyama = np.array([1.e-3*(35.30 - 0.0863*(theta*theta_ref - theta_zero)) for theta in Tempera])
                 Sigma_Bedanov = np.array([1.e-3*(35.72 - 0.0894*(theta*theta_ref - theta_zero)) for theta in Tempera])
@@ -1081,13 +1083,13 @@ def Jrate_sigma(run_dir,run_ver,res_dir):
                 Jrate_Bedanov  = Jrate(Rho, Y_vap, Sigma_Bedanov, Tempera, Sat_R)
                 Jrate_Hameri   = Jrate(Rho, Y_vap, Sigma_Hameri , Tempera, Sat_R)
                 
-                print ''
-                print 'Jrate_AIChE   min/max', np.amin(Jrate_AIChE  ), np.amax(Jrate_AIChE  )
-                print 'Jrate_Ambrose min/max', np.amin(Jrate_Ambrose), np.amax(Jrate_Ambrose)
-                print 'Jrate_Okuyama min/max', np.amin(Jrate_Okuyama), np.amax(Jrate_Okuyama)
-                print 'Jrate_Bedanov min/max', np.amin(Jrate_Bedanov), np.amax(Jrate_Bedanov)
-                print 'Jrate_Hameri  min/max', np.amin(Jrate_Hameri ), np.amax(Jrate_Hameri )
-                print ''
+                print ('')
+                print ('Jrate_AIChE   min/max', np.amin(Jrate_AIChE  ), np.amax(Jrate_AIChE  ))
+                print ('Jrate_Ambrose min/max', np.amin(Jrate_Ambrose), np.amax(Jrate_Ambrose))
+                print ('Jrate_Okuyama min/max', np.amin(Jrate_Okuyama), np.amax(Jrate_Okuyama))
+                print ('Jrate_Bedanov min/max', np.amin(Jrate_Bedanov), np.amax(Jrate_Bedanov))
+                print ('Jrate_Hameri  min/max', np.amin(Jrate_Hameri ), np.amax(Jrate_Hameri ))
+                print ('')
                 
                 sc = sc_Jrat.scatter(Sigma_AIChE  , Jrate_AIChE  , s=0.5, c='green' , alpha=1., edgecolors='none', rasterized=True, label='AIChE  ')
                 sc = sc_Jrat.scatter(Sigma_Ambrose, Jrate_Ambrose, s=0.5, c='orange', alpha=1., edgecolors='none', rasterized=True, label='Ambrose')

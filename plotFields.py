@@ -4,6 +4,8 @@
 plotFields.py
 """
 
+from __future__        import print_function
+
 import os, sys, re, copy #, shutil
 import dataManagement as rosie
 import toolCase as util

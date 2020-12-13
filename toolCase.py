@@ -4,11 +4,13 @@
 toolCase.py
 """
 
+from __future__ import print_function
+
 import os, sys, math #, shutil
 import numpy as np
 import matplotlib.ticker as ticker
 
-from itertools import product 
+from itertools  import product 
 
 sys.dont_write_bytecode = True
 

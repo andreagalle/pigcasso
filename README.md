@@ -42,3 +42,7 @@ git checkout $wrk_branch && git stash apply
 ```
 of course the `git show HEAD --stat` command is not neccessary, but advised to check everything before pushing upstream here. To check in more detail `git log --graph --decorate --oneline` and `git show HEAD` are always the best options.
 
+## Why not python3?
+
+Because it seems that `python3` does not support any package for the VTK library, or simply, I have not found it yet!
+

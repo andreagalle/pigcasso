@@ -4,6 +4,8 @@
 dataManagment.py
 """
 
+from __future__ import print_function
+
 import vtk
 import os, sys
 import toolCase as util
@@ -84,9 +86,13 @@ def getOutputVTKwithPointDataFromFile(fileName):
 
     extension = os.path.splitext(fileName)[-1]
     if extension == '.vtu':
-        reader = vtk.vtkUnstructuredGridReader()
+        reader = vtk.vtkXMLUnstructuredGridReader()
     elif extension == '.vtk':
         reader = vtk.vtkStructuredGridReader()
+
+        reader.ReadAllScalarsOn()
+        reader.ReadAllVectorsOn()
+
     elif extension == '.pvtu':
         reader = vtk.vtkXMLPUnstructuredGridReader()
     elif extension == '.vtp':
@@ -98,11 +104,7 @@ def getOutputVTKwithPointDataFromFile(fileName):
     else:
         raise ValueError("Error: unknown extension of file " + fileName)
 
-#    reader.Initialize()
     reader.SetFileName(fileName)
-
-    reader.ReadAllScalarsOn()
-#    reader.ReadAllVectorsOn()
 
     reader.Update()
     data_outVTK = reader.GetOutput()
