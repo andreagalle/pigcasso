@@ -50,6 +50,7 @@ def statistics(run_directory,run_version,res_directory):
 
     contour_plots     (run_directory, "flu_mean",             run_version, res_directory, fields_list)
     contour_plots     (run_directory, "prt_mean",             run_version, res_directory, fields_list)
+    radaxal_plots     (run_directory, "flu_mean",             run_version, res_directory, fields_list)
     profile_plots     (run_directory, "fcl_mean",             run_version, res_directory, fields_list)
     profile_plots     (run_directory, "fra_mean",             run_version, res_directory, fields_list)
     profile_plots     (run_directory, "prad_pdf",             run_version, res_directory, fields_list)
@@ -1105,5 +1106,49 @@ def Jrate_sigma(run_dir,run_ver,res_dir):
 
         break   #prevent decending into subfolders
     
+    return []
+
+"#################### MEAN PROFILE PLOT ####################" 
+
+def radaxal_plots(run_dir,run_out,run_ver,res_dir,name_list):
+
+    res_dir  = res_dir + '/1D_plots/'
+    
+    if util.chk_dir(res_dir) == False: os.makedirs(res_dir) # make sure the results directory exists 
+
+    file_d = run_dir + '%s%s.vtk'%(run_ver,run_out) ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+
+    for i in [1, 2]:
+
+        if   i == 1: orig = [1.e-2,1.e-2,20.] ; norm1 = [1,0,0] ; norm2 = [0,0,1]
+        elif i == 2: orig = [1.e-2,1.e-2,20.] ; norm1 = [1,0,0] ; norm2 = [0,1,0]
+        
+#        mean_line = rosie.getLine(out_f, orig, norm1, norm2) ; print ('\n--> Slicing %s'%file_d) 
+        mean_line = rosie.getSlice(out_f, orig, norm2) ; print ('\n--> Slicing %s'%file_d) 
+
+        np.set_printoptions(threshold=sys.maxsize)
+
+        grid, mean_fields = rosie.getFields(mean_line,name_list) ; x = grid[:,i]
+
+        for field in mean_fields:   
+
+            fig = plt.figure(figsize=(10, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
+            
+            y = mean_fields[field] ; plt.title('%s'%field) ; ax.set_ylabel('%s'%field)
+
+            xmin, xmax = min(x), max(x) ; ax.set_xlim(xmin, xmax)
+            ymin, ymax = min(y), max(y) ; ax.set_ylim(ymin, ymax)
+            
+            if   i == 1: field_name = "rad_" + field ; ax.set_xlabel('radial distance') #; ax.set_xlim  (xmin, 10.0)
+            elif i == 2: field_name = "axi_" + field ; ax.set_xlabel('axial  distance') #; ax.set_xscale('log')
+
+            print ('\n--> plotting field %s'%field_name)
+
+            ax.plot(x,y,'b-',label=r'%s'%field_name) 
+
+            plt.legend(loc='best') ; plt.grid(which='both', axis='both',color='darkgrey')
+
+            plt.savefig(res_dir + '/%s.png'%field_name, format='png', dpi=300) ; plt.close('all')
+
     return []
 

@@ -78,7 +78,7 @@ def snapshots(run_dir,run_ver,res_dir,fn_head,name_list):
         
         inst_slice = rosie.getSlice(out_f, orig, norm) ; print ('\n--> Slicing %s'%file_d) 
         
-        grid, inst_fields = rosie.getFieldsFromSlice(inst_slice,name_list)
+        grid, inst_fields = rosie.getFields(inst_slice,name_list)
         
         zones_fields.update({zone : [grid, inst_fields]})
 

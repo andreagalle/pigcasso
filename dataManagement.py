@@ -25,7 +25,11 @@ def getFields(out_f,fields_names):
     fields_number = out_f.GetPointData().GetNumberOfArrays()
     fields_avails = [out_f.GetPointData().GetArrayName(i) for i in range(fields_number)]
 
-#    [GridCoords, field_array] = getArrayFromPointData(out_f, fields_avails[0]) # just to pick the Grid, anyway
+    for i in range(fields_number):
+
+        [GridCoords, field_array] = getArrayFromPointData(out_f, fields_avails[i]) # just to pick the Grid, anyway
+
+        if field_array.ndim == 1: break
 
     "###############  GET THE FIELDS  ###############"
 
@@ -224,44 +228,47 @@ def getSlice(data_outVTK, orig, nor):
     return slice_outVTK
 
 
-"#################### FIELDS FROM Slice.vtk  ####################"
+def getLine(data_outVTK, orig, n1, n2):
 
-def getFieldsFromSlice(field_slice,fields_names):
+    """
+    Uses twice the getSlice() function to extract the line defined with the point *orig*
+    and the vector normal to the plane defined with *n1* and *n2*.
 
-    out_f = field_slice ; fields_dictionary = {}
+    Parameters
+    ----------
+    data_outVTK : VTK output object from a VTK reader
+        VTK output object associated to the file we want to extract a slice of data.
+
+    orig : tuple(3)
+        A point element of the line where to extract the data.
+
+    n1 : tuple(3)
+        A vector normal to the line where to extract the data.
+
+    n2 : tuple(3)
+        A vector normal to the line where to extract the data.
+
+    Returns
+    -------
+    line_outVTK : VTK output object from a VTK reader
+        Returned data are still not in an array form, but a VTK output object
+        is returned where the data are stored.
+        
+    """
+
+    # function display 
+    print ('---- DAEPy::getLine ----')
+
+    # stop execution if data not consistent with the method
+    if data_outVTK.GetCell(0).GetNumberOfPoints() < 4:
+        raise ValueError("Error: cells in data from VTK output object are not 3D cells, be sure the data used here are 3D.")
+
+    # Double slicing
+    print ('--> 1st slicing...')
+    dataSlice1 = getSlice(data_outVTK, orig, n1)
+    print ('--> 2nd slicing...')
+    dataSlice2 = getSlice(dataSlice1, orig, n2)
     
-    fields_number = out_f.GetPointData().GetNumberOfArrays()
-    fields_avails = [out_f.GetPointData().GetArrayName(i) for i in range(fields_number)]
-
-    [GridCoords, field_array] = getArrayFromPointData(out_f, fields_avails[0]) # just to pick the Grid, anyway
-
-    "###############  GET THE FIELDS  ###############"
-
-    if not fields_names: fields_names = fields_avails ; print("Fields list is empty: looking for available fields")
-
-    for field_name in fields_names: 
-
-        if field_name not in fields_avails: continue
-
-        [GridCoords, field_array] = getArrayFromPointData(out_f, field_name)
-
-        if field_array.ndim > 1:
-
-            field_array_comp = field_array[:,0]
-            fields_dictionary.update({field_name + '_t': field_array_comp})
-            field_array_comp = field_array[:,1]
-            fields_dictionary.update({field_name + '_r': field_array_comp})
-
-            if np.shape(field_array)[1] == 3:
-		
-                field_array_comp = field_array[:,2]
-                fields_dictionary.update({field_name + '_z': field_array_comp})
-
-            field_array_magn = np.linalg.norm(field_array,axis=1)
-            fields_dictionary.update({field_name + '_m': field_array_magn})
-
-        else:
-            fields_dictionary.update({field_name : field_array})
-
-    return GridCoords, fields_dictionary
+    print ('')
+    return dataSlice2
 
