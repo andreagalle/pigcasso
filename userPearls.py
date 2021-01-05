@@ -70,6 +70,7 @@ def statistics(run_directory,run_version,res_directory):
     run_directory = "../../doc/cases/"
 
     cfr_DNSvsExp     (run_directory, "fried2000F10.11",      run_version, res_directory)
+    cfr_axial_plots  (run_directory, "fcl_mean",             run_version, res_directory, fields_list)
 
 ##    mdot_HKvsMA      (run_directory,                         run_version, res_directory)
 #    Jrate_sigma      (run_directory,                         run_version, res_directory)
@@ -1151,4 +1152,63 @@ def radaxal_plots(run_dir,run_out,run_ver,res_dir,name_list):
             plt.savefig(res_dir + '/%s.png'%field_name, format='png', dpi=300) ; plt.close('all')
 
     return []
+
+"#################### MEAN PROFILE PLOT ####################" 
+
+def cfr_axial_plots(run_dir,run_out,run_ver,res_dir,name_list):
+
+    name_list = [] ; file_list = [] ; run_vers = [run_ver]#,"g","h"] 
+
+    res_dir  = res_dir + '/1D_plots/'
+    
+    if util.chk_dir(res_dir) == False: os.makedirs(res_dir) # make sure the results directory exists 
+
+    for root, dirs, files in os.walk("%s"%run_dir):
+    
+        for filename in files:
+
+            if re.match('%s%s.vtk'%(run_vers,run_out), filename): file_list.append(os.path.join(root, filename))
+
+    file_d = file_list[0] ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+
+    grid, mean_fields = rosie.getFields(out_f,[])
+
+    name_list = list(mean_fields.keys()) 
+
+    for field in name_list:
+
+        fig = plt.figure(figsize=(10, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
+
+        field_name = field ; plt.title('%s'%field_name )
+        
+        if   run_out == "fra_mean": ax.set_xlabel('radial distance') ; ax.set_xlim  (xmin, 10.0)
+        elif run_out == "fcl_mean": ax.set_xlabel('axial  distance')
+
+#        elif run_out == "prad_pdf": 
+#            field_name = "rad_" + field ; ax.set_xscale('log')
+#            ax.set_xlabel('non-dimensional particle radius')
+#            ax.set_ylabel('normalized pdf')
+#            plt.title    ('particle size distribution')
+
+        for dns_dataset in file_list: 
+
+            file_d = dns_dataset ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+
+            grid, mean_fields = rosie.getFields(out_f,[field])
+
+            print ('\n--> plotting field %s'%field)
+
+            x = grid[:,2] ; y = mean_fields[field]
+
+            xmin, xmax = min(x), max(x) ; ax.set_xlim(xmin, xmax)
+            ymin, ymax = min(y), max(y) ; ax.set_ylim(ymin, ymax)
+
+            ax.plot(x,y,'b-',label=r'%s'%field_name) 
+
+            plt.legend(loc='best') ; plt.grid(which='both', axis='both',color='darkgrey')
+
+        plt.savefig(res_dir + '/%s.png'%field_name, format='png', dpi=300) ; plt.close('all')
+
+    return []
+
 

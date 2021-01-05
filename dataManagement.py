@@ -40,7 +40,7 @@ def getFields(out_f,fields_names):
         if field_name not in fields_avails: continue
         
         [GridCoords, field_array] = getArrayFromPointData(out_f, field_name)
-        
+
         if field_array.ndim > 1:
         
             field_array_comp = field_array[:,0]
