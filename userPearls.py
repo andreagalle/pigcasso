@@ -179,11 +179,11 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
             lmin = - labs ; lmax = labs ; levels_n  = 5
             
-        elif re.match('fp_.+',field) :
+        elif re.match('fp_.+',field) or re.match('.+_load',field) :
         
             lmin = util.OOMRoundUp(lmin) ; lmax = util.OOMRoundUp(lmax)
         
-            labs = min(abs(lmin),abs(lmax)) if min(abs(lmin),abs(lmax)) > 1.e-16 else max(abs(lmin),abs(lmax))
+            labs = min(abs(lmin),abs(lmax)) if min(abs(lmin),abs(lmax)) > 1.e-16 else 1.e-16 # max(abs(lmin),abs(lmax))
             
             lmin = - labs ; lmax = labs ; levels_n  = 5
 
