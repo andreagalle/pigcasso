@@ -1157,7 +1157,7 @@ def radaxal_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
 def cfr_axial_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
-    name_list = [] ; file_list = [] ; run_vers = [run_ver]#,"g","h"] 
+    name_list = [] ; file_list = [] ; run_vers = [run_ver,"g","h"]
 
     res_dir  = res_dir + '/1D_plots/'
     
@@ -1203,9 +1203,11 @@ def cfr_axial_plots(run_dir,run_out,run_ver,res_dir,name_list):
             xmin, xmax = min(x), max(x) ; ax.set_xlim(xmin, xmax)
             ymin, ymax = min(y), max(y) ; ax.set_ylim(ymin, ymax)
 
-            ax.plot(x,y,'b-',label=r'%s'%field_name) 
+            if   re.match('.+Re6k-2w.+', file_d): ax.plot(x,y,'k-', label=r'%s'%field_name) 
+            elif re.match('.+Re3k-2w.+', file_d): ax.plot(x,y,'b--',label=r'%s'%field_name) 
+            elif re.match('.+Re3k-1w.+', file_d): ax.plot(x,y,'r:', label=r'%s'%field_name) 
 
-            plt.legend(loc='best') ; plt.grid(which='both', axis='both',color='darkgrey')
+            plt.grid(which='both', axis='both',color='darkgrey') #; plt.legend(loc='best')
 
         plt.savefig(res_dir + '/%s.png'%field_name, format='png', dpi=300) ; plt.close('all')
 
