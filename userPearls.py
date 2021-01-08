@@ -595,7 +595,7 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
         z = mean_fields['part_number'] ; zi = griddata((x, y), z, (xi, yi), method='linear')
 
-        y_dns = util.ProbeAtLocation(zi, xi, yi, 0.5, 40.0) ; print ("probed value is :", y_dns)
+        y_dns = util.ProbeAtLocation(zi, xi, yi, 0.5, 40.0) ; print ("non-dimensional probed value is :", y_dns, " for the field : ", file_d)
 
         # better to refactor everything here with dictionaries ! ....
 
