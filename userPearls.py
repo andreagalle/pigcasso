@@ -61,16 +61,16 @@ def statistics(run_directory,run_version,res_directory):
     scatter_plots     (run_directory, "SL",                   run_version, res_directory, fields_list)
     norm_profile_plots(run_directory, "fra_mean", "fcl_mean", run_version, res_directory)
 
-#     run_directory = "cfr-pdf-rad/"
+#     cfr_directory = "cfr-pdf-rad/"
 #
-#    cfr_profile_plots (run_directory, "prad_pdf",             run_version, res_directory)
-#    cfr_profile_plots (run_directory, "pexp_pdf",             run_version, res_directory)
-#    cfr_profile_plots (run_directory, "pvol_pdf",             run_version, res_directory)
+#    cfr_profile_plots (cfr_directory, "prad_pdf",             run_version, res_directory)
+#    cfr_profile_plots (cfr_directory, "pexp_pdf",             run_version, res_directory)
+#    cfr_profile_plots (cfr_directory, "pvol_pdf",             run_version, res_directory)
 
-    run_directory = "../../doc/cases/"
+    cfr_directory = "../../doc/cases/"
 
-    cfr_DNSvsExp     (run_directory, "fried2000F10.11",      run_version, res_directory)
-    cfr_axial_plots  (run_directory, "fcl_mean",             run_version, res_directory, fields_list)
+    cfr_DNSvsExp     (cfr_directory, "fried2000F10.11",      run_version, res_directory)
+    cfr_axial_plots  (cfr_directory,                          run_version, res_directory, fields_list)
 
 ##    mdot_HKvsMA      (run_directory,                         run_version, res_directory)
 #    Jrate_sigma      (run_directory,                         run_version, res_directory)
@@ -87,11 +87,11 @@ Navg = 6.022e+23 ; Kbol = 1.381e-23 ; Mmol = Wvap/Navg ; theta_zero = 273.15 ; L
 
 def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
-    nan_list = ['Crit_Radius','Crit_Radius_rms','part_number','part_radius','mass_loading','dexp_number']
-
     res_dir = res_dir + '2D_contour/'
 
     if util.chk_dir(res_dir) == False: os.makedirs(res_dir) 
+
+    nan_list = ['Crit_Radius','Crit_Radius_rms','part_number','part_radius','mass_loading','dexp_number']
 
     file_d = run_dir + '%s%s.vtk'%(run_ver,run_out) ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
 
@@ -534,11 +534,11 @@ def cfr_profile_plots(run_dir,run_out,run_ver,res_dir):
 
 def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
 
-    name_list = [] ; file_list = [] ; run_vers = [run_ver,"g","h"] #; run_vers = list(run_ver).append("g")
-
     res_dir = res_dir + '2D_scatter/'
 
     if util.chk_dir(res_dir) == False: os.makedirs(res_dir) 
+
+    name_list = [] ; file_list = [] ; run_vers = [run_ver,"a","g","h"] #; run_vers = list(run_ver).append("g")
     
     x_exp=[] ; y_exp=[]
 
@@ -752,13 +752,13 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     
     plt.scatter(x_exp, y_exp_dime, s=markers_size, c='b')#, label='experiments ')
 
-    plt.scatter(x_dns_3k_2w_long_oku, y_dns_3k_2w_long_dime_oku, s=markers_size, c='r', marker='s', label='2w Re 3k Okuyama')
+    plt.scatter(x_dns_3k_2w_long_oku, y_dns_3k_2w_long_dime_oku, s=markers_size, c='r', marker='s', label='2w Re 3k Oku.')
     plt.scatter(x_dns_3k_2w_long_ham, y_dns_3k_2w_long_dime_ham, s=markers_size, c='g', marker='s')#, label='2w Re 3k Hameri')
 
-    plt.scatter(x_dns_3k_1w_long_oku, y_dns_3k_1w_long_dime_oku, s=markers_size, c='r', marker='v', label='1w Re 3k Okuyama')
+    plt.scatter(x_dns_3k_1w_long_oku, y_dns_3k_1w_long_dime_oku, s=markers_size, c='r', marker='v', label='1w Re 3k Oku.')
     plt.scatter(x_dns_3k_1w_long_ham, y_dns_3k_1w_long_dime_ham, s=markers_size, c='g', marker='v')#, label='1w Re 3k Hameri')
 
-    plt.scatter(x_dns_6k_2w_long_oku, y_dns_6k_2w_long_dime_oku, s=markers_size, c='r', marker='D', label='2w Re 6k Okuyama')
+    plt.scatter(x_dns_6k_2w_long_oku, y_dns_6k_2w_long_dime_oku, s=markers_size, c='r', marker='D', label='2w Re 6k Oku.')
     plt.scatter(x_dns_6k_2w_long_ham, y_dns_6k_2w_long_dime_ham, s=markers_size, c='g', marker='D')#, label='2w Re 6k Hameri')
     
     plt.grid(True) ; plt.title('dimensional results') ; plt.legend(loc="lower right")
@@ -782,16 +782,16 @@ def cfr_DNSvsExp(run_dir,plot_name,run_ver,res_dir):
     
     plt.scatter(x_exp, y_exp_norm, s=markers_size, c='b')#, label='experiments ')
 
-    plt.scatter(x_dns_3k_2w_long_oku, y_dns_3k_2w_long_norm_oku, s=markers_size, c='r', marker='s', label='2w Re 3k Okuyama')
-    plt.scatter(x_dns_3k_2w_long_ham, y_dns_3k_2w_long_norm_ham, s=markers_size, c='g', marker='s', label='2w Re 3k Hameri')
+    plt.scatter(x_dns_3k_2w_long_oku, y_dns_3k_2w_long_norm_oku, s=markers_size, c='r', marker='s')#, label='2w Re 3k Okuyama')
+    plt.scatter(x_dns_3k_2w_long_ham, y_dns_3k_2w_long_norm_ham, s=markers_size, c='g', marker='s', label='2w Re 3k Ham.')
 
-    plt.scatter(x_dns_3k_1w_long_oku, y_dns_3k_1w_long_norm_oku, s=markers_size, c='r', marker='v', label='1w Re 3k Okuyama')
-    plt.scatter(x_dns_3k_1w_long_ham, y_dns_3k_1w_long_norm_ham, s=markers_size, c='g', marker='v', label='1w Re 3k Hameri')
+    plt.scatter(x_dns_3k_1w_long_oku, y_dns_3k_1w_long_norm_oku, s=markers_size, c='r', marker='v')#, label='1w Re 3k Okuyama')
+    plt.scatter(x_dns_3k_1w_long_ham, y_dns_3k_1w_long_norm_ham, s=markers_size, c='g', marker='v', label='1w Re 3k Ham.')
 
-    plt.scatter(x_dns_6k_2w_long_oku, y_dns_6k_2w_long_norm_oku, s=markers_size, c='r', marker='D', label='2w Re 6k Okuyama')
-    plt.scatter(x_dns_6k_2w_long_ham, y_dns_6k_2w_long_norm_ham, s=markers_size, c='g', marker='D', label='2w Re 6k Hameri')
+    plt.scatter(x_dns_6k_2w_long_oku, y_dns_6k_2w_long_norm_oku, s=markers_size, c='r', marker='D')#, label='2w Re 6k Okuyama')
+    plt.scatter(x_dns_6k_2w_long_ham, y_dns_6k_2w_long_norm_ham, s=markers_size, c='g', marker='D', label='2w Re 6k Ham.')
     
-    plt.grid(True) ; plt.title('non-dimensional results') #; plt.legend(loc="lower right")
+    plt.grid(True) ; plt.title('non-dimensional results') ; plt.legend(loc="lower right")
 #    plt.grid(True) ; plt.legend(loc="upper left") ; plt.title('non-dimensional results')
     
     plt.xlabel('DBP inlet molar-franction') ; plt.ylabel('Particle Number Density (#/dV)')
@@ -1124,10 +1124,7 @@ def radaxal_plots(run_dir,run_out,run_ver,res_dir,name_list):
         if   i == 1: orig = [1.e-2,1.e-2,20.] ; norm1 = [1,0,0] ; norm2 = [0,0,1]
         elif i == 2: orig = [1.e-2,1.e-2,20.] ; norm1 = [1,0,0] ; norm2 = [0,1,0]
         
-#        mean_line = rosie.getLine(out_f, orig, norm1, norm2) ; print ('\n--> Slicing %s'%file_d) 
         mean_line = rosie.getSlice(out_f, orig, norm2) ; print ('\n--> Slicing %s'%file_d) 
-
-        np.set_printoptions(threshold=sys.maxsize)
 
         grid, mean_fields = rosie.getFields(mean_line,name_list) ; x = grid[:,i]
 
@@ -1155,13 +1152,16 @@ def radaxal_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
 "#################### MEAN PROFILE PLOT ####################" 
 
-def cfr_axial_plots(run_dir,run_out,run_ver,res_dir,name_list):
-
-    name_list = [] ; file_list = [] ; run_vers = [run_ver,"g","h"]
+def cfr_axial_plots(run_dir,run_ver,res_dir,name_list):
 
     res_dir  = res_dir + '/1D_plots/'
     
     if util.chk_dir(res_dir) == False: os.makedirs(res_dir) # make sure the results directory exists 
+
+    run_vers = [run_ver,"a","g","h"]
+
+
+    
 
     for root, dirs, files in os.walk("%s"%run_dir):
     
@@ -1180,15 +1180,6 @@ def cfr_axial_plots(run_dir,run_out,run_ver,res_dir,name_list):
         fig = plt.figure(figsize=(10, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
 
         field_name = field ; plt.title('%s'%field_name )
-        
-        if   run_out == "fra_mean": ax.set_xlabel('radial distance') ; ax.set_xlim  (xmin, 10.0)
-        elif run_out == "fcl_mean": ax.set_xlabel('axial  distance')
-
-#        elif run_out == "prad_pdf": 
-#            field_name = "rad_" + field ; ax.set_xscale('log')
-#            ax.set_xlabel('non-dimensional particle radius')
-#            ax.set_ylabel('normalized pdf')
-#            plt.title    ('particle size distribution')
 
         for dns_dataset in file_list: 
 
@@ -1202,6 +1193,9 @@ def cfr_axial_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
             xmin, xmax = min(x), max(x) ; ax.set_xlim(xmin, xmax)
             ymin, ymax = min(y), max(y) ; ax.set_ylim(ymin, ymax)
+        
+            if   run_out == "fra_mean": ax.set_xlabel('radial distance') ; ax.set_xlim  (xmin, 10.0)
+            elif run_out == "fcl_mean": ax.set_xlabel('axial  distance') ; ax.set_xlim  (xmin, 80.0)
 
             if   re.match('.+Re6k-2w.+', file_d): ax.plot(x,y,'k-', label=r'%s'%field_name) 
             elif re.match('.+Re3k-2w.+', file_d): ax.plot(x,y,'b--',label=r'%s'%field_name) 
@@ -1211,6 +1205,107 @@ def cfr_axial_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
         plt.savefig(res_dir + '/%s.png'%field_name, format='png', dpi=300) ; plt.close('all')
 
-    return []
 
+
+    name_list = [] ; file_list = [] ; run_list = ["flu_mean", "prt_mean"]
+
+    for run_out in run_list:
+
+        for root, dirs, files in os.walk("%s"%run_dir):
+        
+            for filename in files:
+
+                if re.match('%s%s.vtk'%(run_vers,run_out), filename): file_list.append(os.path.join(root, filename))
+
+        file_d = file_list[0] ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+
+        grid, mean_fields = rosie.getFields(out_f,[])
+
+#        name_list = [x for x in list(mean_fields.keys()) if "_rms" not in x]
+        name_list = list(mean_fields.keys())
+
+        for field in name_list:
+
+            if     re.match('U_.$',     field) : aux_field = "U"
+            elif   re.match('U_rms_.$', field) : aux_field = "U_rms"
+            else                               : aux_field = field
+            print(aux_field)
+
+            for i in [1, 2]:
+
+                ymax = - np.inf ; ymin = np.inf
+        
+                if   i == 1: 
+
+                    for ax_dist in [20 , 40 , 60]:
+
+                        fig = plt.figure(figsize=(10, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
+
+                        field_name = 'rad_z%d_'%ax_dist + field ; ax.set_xlabel('radial distance') 
+
+                        orig = [1.e-2,1.e-2,ax_dist] ; norm1 = [1,0,0] ; norm2 = [0,0,1]
+        
+                        print ('\n--> plotting field %s along the radial direction'%field)
+        
+                        plt.title('%s'%field_name ) ; ax.set_ylabel('%s'%field)
+                        
+        
+                        for dns_dataset in file_list: 
+        
+                            file_d = dns_dataset ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+            
+                            mean_line = rosie.getSlice(out_f, orig, norm2) ; print ('\n--> Slicing %s'%file_d) 
+
+                            grid, mean_fields = rosie.getFields(mean_line,[aux_field])
+
+                            x = grid[:,i] ; y = mean_fields[field]
+                            
+                            xmin, xmax =          min(x) ,          max(x)  ; ax.set_xlim(xmin, 15.0)  #; ax.set_xlim(xmin, xmax)
+                            ymin, ymax = min(ymin,min(y)), max(ymax,max(y)) ; ax.set_ylim(ymin, ymax)
+
+                            if   re.match('.+Re6k-2w.+', file_d): ax.plot(x,y,'k-', label=r'%s'%field_name) 
+                            elif re.match('.+Re3k-2w.+', file_d): ax.plot(x,y,'b--',label=r'%s'%field_name) 
+                            elif re.match('.+Re3k-1w.+', file_d): ax.plot(x,y,'r:', label=r'%s'%field_name) 
+        
+                            plt.grid(which='both', axis='both',color='darkgrey') #; plt.legend(loc='best')
+        
+                        plt.savefig(res_dir + '/cfr_%s.png'%field_name, format='png', dpi=300) ; plt.close('all')
+        
+                elif i == 2: 
+
+                    if   re.match('.+_rms', file_d): continue
+
+                    fig = plt.figure(figsize=(10, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
+
+                    field_name = "axi_" + field ; ax.set_xlabel('axial  distance')
+
+                    orig = [1.e-2,1.e-2,20.] ; norm1 = [1,0,0] ; norm2 = [0,1,0]
+
+                    print ('\n--> plotting field %s along the axial  direction'%field)
+        
+                    plt.title('%s'%field_name ) ; ax.set_ylabel('%s'%field)
+                    
+        
+                    for dns_dataset in file_list: 
+        
+                        file_d = dns_dataset ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+            
+                        mean_line = rosie.getSlice(out_f, orig, norm2) ; print ('\n--> Slicing %s'%file_d) 
+
+                        grid, mean_fields = rosie.getFields(mean_line,[aux_field])
+
+                        x = grid[:,i] ; y = mean_fields[field]
+                        
+                        xmin, xmax =          min(x) ,          max(x)  ; ax.set_xlim(xmin, 80.0) #; ax.set_xlim(xmin, xmax)
+                        ymin, ymax = min(ymin,min(y)), max(ymax,max(y)) ; ax.set_ylim(ymin, ymax)
+
+                        if   re.match('.+Re6k-2w.+', file_d): ax.plot(x,y,'k-', label=r'%s'%field_name) 
+                        elif re.match('.+Re3k-2w.+', file_d): ax.plot(x,y,'b--',label=r'%s'%field_name) 
+                        elif re.match('.+Re3k-1w.+', file_d): ax.plot(x,y,'r:', label=r'%s'%field_name) 
+        
+                        plt.grid(which='both', axis='both',color='darkgrey') #; plt.legend(loc='best')
+        
+                    plt.savefig(res_dir + '/cfr_%s.png'%field_name, format='png', dpi=300) ; plt.close('all')
+
+    return []
 
