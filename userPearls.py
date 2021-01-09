@@ -1208,9 +1208,11 @@ def cfr_axial_plots(run_dir,run_ver,res_dir,name_list):
 
 
 
-    name_list = [] ; file_list = [] ; run_list = ["flu_mean", "prt_mean"]
+    run_list = ["flu_mean", "prt_mean"]
 
     for run_out in run_list:
+
+        name_list = [] ; file_list = []
 
         for root, dirs, files in os.walk("%s"%run_dir):
         
@@ -1222,15 +1224,13 @@ def cfr_axial_plots(run_dir,run_ver,res_dir,name_list):
 
         grid, mean_fields = rosie.getFields(out_f,[])
 
-#        name_list = [x for x in list(mean_fields.keys()) if "_rms" not in x]
-        name_list = list(mean_fields.keys())
+        name_list = list(mean_fields.keys()) # [x for x in list(mean_fields.keys()) if "_rms" not in x]
 
         for field in name_list:
 
             if     re.match('U_.$',     field) : aux_field = "U"
             elif   re.match('U_rms_.$', field) : aux_field = "U_rms"
             else                               : aux_field = field
-            print(aux_field)
 
             for i in [1, 2]:
 
