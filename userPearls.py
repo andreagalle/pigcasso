@@ -1161,7 +1161,8 @@ def cfr_axial_plots(run_dir,run_ver,res_dir,name_list):
     run_vers = [run_ver,"a","g","h"]
 
 
-    
+
+    name_list = [] ; file_list = [] ; run_out = "fcl_mean"
 
     for root, dirs, files in os.walk("%s"%run_dir):
     
