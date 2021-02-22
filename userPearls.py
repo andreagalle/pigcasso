@@ -70,7 +70,10 @@ def statistics(run_directory,run_version,res_directory):
     cfr_directory = "../../doc/cases/"
 
     cfr_DNSvsExp     (cfr_directory, "fried2000F10.11",      run_version, res_directory)
-    cfr_axial_plots  (cfr_directory,                          run_version, res_directory, fields_list)
+    cfr_profile_plots  (cfr_directory,"fcl_mean",              run_version, res_directory, fields_list) # HWR_* fields
+    cfr_profile_plots  (cfr_directory,"flu_mean",              run_version, res_directory, fields_list)
+    cfr_profile_plots  (cfr_directory,"prt_mean",              run_version, res_directory, fields_list)
+    cfr_selfsim_plots  (cfr_directory,"flu_mean",              run_version, res_directory, fields_list)
 
 ##    mdot_HKvsMA      (run_directory,                         run_version, res_directory)
 #    Jrate_sigma      (run_directory,                         run_version, res_directory)
@@ -156,9 +159,11 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
         if run_out == 'flu_mean' and np.isclose(max(mean_fields['Y']),2.1e-3, rtol=1e-4, atol=1e-4):
 
-            if   field == 'J_rate'         : lmin =   0.0     ; lmax =   3.6    ; levels_n  = 6 ; oo_magn =  0
-            elif field == 'fake_J_rate'    : lmin =   0.0     ; lmax =   3.6    ; levels_n  = 6 ; oo_magn =  0
+            if   field == 'J_rate'         : lmin =   0.0     ; lmax =   1.0    ; levels_n  = 5 ; oo_magn =  0
+            elif field == 'fake_J_rate'    : lmin =   0.0     ; lmax =   1.0    ; levels_n  = 5 ; oo_magn =  0
             elif field == 'Jrate_rms'      : lmin =   0.0     ; lmax =   1.2    ; levels_n  = 6 ; oo_magn =  0
+            elif field == 'Y_rms'          : lmin =   0.0     ; lmax =   5.0e-4 ; levels_n  = 5
+            elif field == 'Temperature_rms': lmin =   0.0     ; lmax =   5.0e-4 ; levels_n  = 5
 
         if run_out == 'flu_mean' and np.isclose(max(mean_fields['Y']),2.5e-3, rtol=1e-4, atol=1e-4):
 
@@ -237,7 +242,15 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 #            zi = ma.masked_invalid(zi) ; my_cmap.set_bad(color='lightyellow') # no effect on contourf
 
             if   field == 'Sat_Ratio'              : lmin = 1.e+1 ; lmax = 1.e+4 #; levels_n = 3
-            elif field in ['J_rate','fake_J_rate'] : lmin = 1.e-1 ; lmax = 1.e+3 #; levels_n = 3
+#            elif field in ['J_rate','fake_J_rate'] : lmin = 1.e-1 ; lmax = 1.e+3 #; levels_n = 3
+
+            if run_out == 'flu_mean' and np.isclose(max(mean_fields['Y']),2.1e-3, rtol=1e-4, atol=1e-4):
+
+                if   field in ['J_rate','fake_J_rate'] : 
+
+#                    lmin = 1.e-5 ; lmax = 1.0 ; oo_magn = -5 ; cm_format = util.OOMFormatter(oo_magn, mathText=False) #; levels_n  = 5 ; oo_magn =  0
+                    lmin = 1.e-5 ; lmax = 1.0 ; oo_magn = -5 ; cm_format = '%.0e'
+                    
 
             lev_exp = np.arange(np.floor(np.log10(lmin)-1), np.ceil(np.log10(lmax)+1)) ; levs = np.power(10, lev_exp)
 
@@ -1033,7 +1046,7 @@ def Jrate_sigma(run_dir,run_ver,res_dir):
     if util.chk_dir(res_dir) == False: os.makedirs(res_dir) 
 
 
-    fig = plt.figure(figsize=(18, 9))
+    fig = plt.figure(figsize=(12, 6))
         
     sc_Jrat = fig.add_subplot(111) ; sc_Jrat.set_yscale('log')
     
@@ -1152,7 +1165,7 @@ def radaxal_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
 "#################### MEAN PROFILE PLOT ####################" 
 
-def cfr_axial_plots(run_dir,run_ver,res_dir,name_list):
+def cfr_profile_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
     res_dir  = res_dir + '/1D_plots/'
     
@@ -1162,7 +1175,7 @@ def cfr_axial_plots(run_dir,run_ver,res_dir,name_list):
 
 
 
-    name_list = [] ; file_list = [] ; run_out = "fcl_mean"
+    name_list = [] ; file_list = []
 
     for root, dirs, files in os.walk("%s"%run_dir):
     
@@ -1174,59 +1187,44 @@ def cfr_axial_plots(run_dir,run_ver,res_dir,name_list):
 
     grid, mean_fields = rosie.getFields(out_f,[])
 
-    name_list = list(mean_fields.keys()) 
+    name_list = list(mean_fields.keys()) # [x for x in list(mean_fields.keys()) if "_rms" not in x]
 
-    for field in name_list:
-
-        fig = plt.figure(figsize=(10, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
-
-        field_name = field ; plt.title('%s'%field_name )
-
-        for dns_dataset in file_list: 
-
-            file_d = dns_dataset ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
-
-            grid, mean_fields = rosie.getFields(out_f,[field])
-
-            print ('\n--> plotting field %s'%field)
-
-            x = grid[:,2] ; y = mean_fields[field]
-
-            xmin, xmax = min(x), max(x) ; ax.set_xlim(xmin, xmax)
-            ymin, ymax = min(y), max(y) ; ax.set_ylim(ymin, ymax)
-        
-            if   run_out == "fra_mean": ax.set_xlabel('radial distance') ; ax.set_xlim  (xmin, 10.0)
-            elif run_out == "fcl_mean": ax.set_xlabel('axial  distance') ; ax.set_xlim  (xmin, 80.0)
-
-            if   re.match('.+Re6k-2w.+', file_d): ax.plot(x,y,'k-', label=r'%s'%field_name) 
-            elif re.match('.+Re3k-2w.+', file_d): ax.plot(x,y,'b--',label=r'%s'%field_name) 
-            elif re.match('.+Re3k-1w.+', file_d): ax.plot(x,y,'r:', label=r'%s'%field_name) 
-
-            plt.grid(which='both', axis='both',color='darkgrey') #; plt.legend(loc='best')
-
-        plt.savefig(res_dir + '/%s.png'%field_name, format='png', dpi=300) ; plt.close('all')
-
-
-
-    run_list = ["flu_mean", "prt_mean"]
-
-    for run_out in run_list:
-
-        name_list = [] ; file_list = []
-
-        for root, dirs, files in os.walk("%s"%run_dir):
-        
-            for filename in files:
-
-                if re.match('%s%s.vtk'%(run_vers,run_out), filename): file_list.append(os.path.join(root, filename))
-
-        file_d = file_list[0] ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
-
-        grid, mean_fields = rosie.getFields(out_f,[])
-
-        name_list = list(mean_fields.keys()) # [x for x in list(mean_fields.keys()) if "_rms" not in x]
+    if run_out == "fcl_mean" :
 
         for field in name_list:
+
+            fig = plt.figure(figsize=(10, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
+
+            field_name = field ; plt.title('%s'%field_name )
+
+            for dns_dataset in file_list: 
+
+                file_d = dns_dataset ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+
+                grid, mean_fields = rosie.getFields(out_f,[field])
+
+                print ('\n--> plotting field %s'%field)
+
+                x = grid[:,2] ; y = mean_fields[field]
+
+                xmin, xmax = min(x), max(x) ; ax.set_xlim(xmin, xmax)
+                ymin, ymax = min(y), max(y) ; ax.set_ylim(ymin, ymax)
+            
+                if   run_out == "fra_mean": ax.set_xlabel('radial distance') ; ax.set_xlim  (xmin, 10.0)
+                elif run_out == "fcl_mean": ax.set_xlabel('axial  distance') ; ax.set_xlim  (xmin, 80.0)
+
+                if   re.match('.+Re6k-2w.+', file_d): ax.plot(x,y,'k-', label=r'%s'%field_name) 
+                elif re.match('.+Re3k-2w.+', file_d): ax.plot(x,y,'b--',label=r'%s'%field_name) 
+                elif re.match('.+Re3k-1w.+', file_d): ax.plot(x,y,'r:', label=r'%s'%field_name) 
+
+                plt.grid(which='both', axis='both',color='darkgrey') #; plt.legend(loc='best')
+
+            plt.savefig(res_dir + '/%s.png'%field_name, format='png', dpi=300) ; plt.close('all')
+
+
+    else :
+
+        for field in ["J_rate","fake_J_rate","Y","Y_saturat"]:#name_list:
 
             if     re.match('U_.$',     field) : aux_field = "U"
             elif   re.match('U_rms_.$', field) : aux_field = "U_rms"
@@ -1264,6 +1262,9 @@ def cfr_axial_plots(run_dir,run_ver,res_dir,name_list):
                             xmin, xmax =          min(x) ,          max(x)  ; ax.set_xlim(xmin, 15.0)  #; ax.set_xlim(xmin, xmax)
                             ymin, ymax = min(ymin,min(y)), max(ymax,max(y)) ; ax.set_ylim(ymin, ymax)
 
+                            if   field in ["Y","Y_saturat"]        : ax.set_ylim(ymin  , 2.5e-3)
+                            elif field in ["J_rate","fake_J_rate"] : ax.set_ylim(1.0e-3, 1.0e+2) ; ax.set_yscale('log')
+
                             if   re.match('.+Re6k-2w.+', file_d): ax.plot(x,y,'k-', label=r'%s'%field_name) 
                             elif re.match('.+Re3k-2w.+', file_d): ax.plot(x,y,'b--',label=r'%s'%field_name) 
                             elif re.match('.+Re3k-1w.+', file_d): ax.plot(x,y,'r:', label=r'%s'%field_name) 
@@ -1300,6 +1301,9 @@ def cfr_axial_plots(run_dir,run_ver,res_dir,name_list):
                         xmin, xmax =          min(x) ,          max(x)  ; ax.set_xlim(xmin, 80.0) #; ax.set_xlim(xmin, xmax)
                         ymin, ymax = min(ymin,min(y)), max(ymax,max(y)) ; ax.set_ylim(ymin, ymax)
 
+                        if   field in ["Y","Y_saturat"]        : ax.set_ylim(ymin  , 2.5e-3)
+                        elif field in ["J_rate","fake_J_rate"] : ax.set_ylim(1.0e-3, 1.0e+2) ; ax.set_yscale('log')
+
                         if   re.match('.+Re6k-2w.+', file_d): ax.plot(x,y,'k-', label=r'%s'%field_name) 
                         elif re.match('.+Re3k-2w.+', file_d): ax.plot(x,y,'b--',label=r'%s'%field_name) 
                         elif re.match('.+Re3k-1w.+', file_d): ax.plot(x,y,'r:', label=r'%s'%field_name) 
@@ -1307,6 +1311,130 @@ def cfr_axial_plots(run_dir,run_ver,res_dir,name_list):
                         plt.grid(which='both', axis='both',color='darkgrey') #; plt.legend(loc='best')
         
                     plt.savefig(res_dir + '/cfr_%s.png'%field_name, format='png', dpi=300) ; plt.close('all')
+
+    return []
+
+"#################### SELF-SIMILAR PROFILE PLOT ####################" 
+
+def cfr_selfsim_plots(run_dir,run_out,run_ver,res_dir,name_list):
+
+    res_dir  = res_dir + '/1D_plots/'
+    
+    if util.chk_dir(res_dir) == False: os.makedirs(res_dir) # make sure the results directory exists 
+
+    run_vers = [run_ver,"a","g","h"]
+
+
+
+    name_list = [] ; file_list = []
+
+    for root, dirs, files in os.walk("%s"%run_dir):
+    
+        for filename in files:
+
+            if re.match('%s%s.vtk'%(run_vers,run_out), filename): file_list.append(os.path.join(root, filename))
+
+    file_d = file_list[0] ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+
+    grid, mean_fields = rosie.getFields(out_f,[])
+
+    name_list = list(mean_fields.keys()) # [x for x in list(mean_fields.keys()) if "_rms" not in x]
+
+    for field in ["Y","Temperature"]:#name_list:
+
+        if     re.match('U_.$',     field) : aux_field = "U"
+        elif   re.match('U_rms_.$', field) : aux_field = "U_rms"
+        else                               : aux_field = field
+
+        ymax = - np.inf ; ymin = np.inf
+    
+
+        fig = plt.figure(figsize=(10, 5)) ; ax = fig.add_subplot(111) # ; ax.set_aspect(1, adjustable = 'box')
+    
+        print ('\n--> plotting field %s along the radial direction'%field)
+
+        field_name = 'rad_' + field ; ax.set_xlabel('radial distance') 
+        
+        plt.title('%s'%field_name ) ; ax.set_ylabel('%s'%field)
+
+        for ax_dist in [20 , 40 , 60]:
+
+            orig = [1.e-2,1.e-2,float(ax_dist)] ; norm1 = [0,0,1] ; norm2 = [0,1,0]
+            
+    
+            for dns_dataset in file_list: 
+
+                # retrieve radial profiles to be normalized
+    
+                file_d = dns_dataset ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+        
+                mean_line = rosie.getSlice(out_f, orig, norm1) ; print ('\n--> Slicing %s'%file_d) 
+
+                grid, mean_fields = rosie.getFields(mean_line,[aux_field])
+
+                x = grid[:,1] ; y = mean_fields[field] 
+
+                if field == "Temperature": y = y - 1.0 #min(y) # i.e. 1.0 
+                
+                xmin, xmax =          min(x) ,          max(x)  ; ax.set_xlim(0.0, 2.0)  #; ax.set_xlim(xmin, xmax)
+                ymin, ymax = min(ymin,min(y)), max(ymax,max(y)) ; ax.set_ylim(0.0, 2.0)
+
+
+                cent_line = rosie.getSlice(out_f, orig, norm2) ; print ('\n--> Slicing %s'%file_d) 
+
+                grid, norm_fields = rosie.getFields(cent_line,[aux_field])
+
+                y_centline = norm_fields[field] #; x = grid[:,2]
+
+
+                tolerance = 1.e-2
+
+                for i in range(len(y_centline)):
+
+                    if np.isclose(grid[i,2],float(ax_dist), rtol=tolerance, atol=tolerance): # use util.find_nearest
+                
+                        y_cntl = y_centline[i]
+
+                        if field == "Temperature": y_cntl = y_cntl - 1.0 #min(y) # i.e. 1.0  
+
+                        y_norm = y/y_cntl
+                        
+                        break
+
+
+                path, filename = os.path.split(dns_dataset) ; filename = os.path.splitext(filename)[0]
+
+                newfilename = filename[0] +  'fcl_mean.vtk' 
+
+                hwr_dataset = os.path.join(path, newfilename)
+
+
+                if   field == "Y"           : hwr_field = 'HWR_' + "Ya"
+                elif field == "Temperature" : hwr_field = 'HWR_' + "Tempera"
+                else                        : hwr_field = 'HWR_' + field 
+
+                file_d = hwr_dataset ; out_f = rosie.getOutputVTKwithPointDataFromFile(file_d)
+                
+                grid, hwr_fields = rosie.getFields(out_f,[hwr_field])
+                
+                y_hwr = hwr_fields[hwr_field] #; x = grid[:,2]
+
+                for i in range(len(y_hwr)):
+                
+                    if np.isclose(grid[i,2],float(ax_dist), rtol=tolerance, atol=tolerance): # use util.find_nearest
+                
+                        x_norm = x/y_hwr[i]
+                
+                        break
+
+
+                if   re.match('.+Re6k-2w.+', file_d): ax.plot(x_norm,y_norm,'k-', label=r'%s'%field_name) ; print('plotting ',file_d) 
+                elif re.match('.+Re3k-2w.+', file_d): ax.plot(x_norm,y_norm,'b--',label=r'%s'%field_name) ; print('plotting ',file_d) 
+                elif re.match('.+Re3k-1w.+', file_d): ax.plot(x_norm,y_norm,'r:', label=r'%s'%field_name) ; print('plotting ',file_d) 
+    
+        plt.grid(which='both', axis='both',color='darkgrey') #; plt.legend(loc='best')
+    
+        plt.savefig(res_dir + '/slf_%s.png'%field_name, format='png', dpi=300) ; print('saving ','slf_%s.png'%field_name) ; plt.close('all')
 
     return []
 
