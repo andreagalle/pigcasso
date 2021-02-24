@@ -125,6 +125,8 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
         z = mean_fields[field] ; lmin = min(z) ; lmax = max(z)
 
+        if field == 'Temperature_rms': print('min and max values are : ',lmin , lmax)
+
         if field in nan_list: 
 
            if   field == 'part_number' : z[z <= 1.e-16] = np.nan
@@ -141,10 +143,10 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
         if field in nan_list: my_cmap.set_under(color='lightyellow') ; zi = np.nan_to_num(zi)#, nan=-9999) # upgrade numpy 
 
         if   field == 'Temperature'    : lmin =   0.9     ; lmax =   1.3
-        elif field == 'Temperature_rms': lmin =   0.0     ; lmax =   0.1    ; levels_n  = 5
+#        elif field == 'Temperature_rms': lmin =   0.0     ; lmax =   0.1    ; levels_n  = 5
         elif field == 'Sat_Ratio'      : lmin =   0.0     ; lmax = 900.0    ; levels_n  = 6
-        elif field == 'Y'              : lmin =   0.0     ; lmax =   3.2e-3                 ; oo_magn = -3
-        elif field == 'Y_saturat'      : lmin =   0.0     ; lmax =   3.2e-6                 ; oo_magn = -6
+        elif field == 'Y'              : lmin =   0.1e-3  ; lmax =   2.5e-3                 ; oo_magn = -3
+        elif field == 'Y_saturat'      : lmin =   0.0     ; lmax =   2.5e-6                 ; oo_magn = -6
         elif field == 'Rho'            : lmin =   0.7     ; lmax =   1.0    ; levels_n  = 6
         elif field == 'U_r'            : lmin =  -0.03    ; lmax =   0.03   ; levels_n  = 6 ; oo_magn = -2
         elif field == 'Crit_Radius'    : lmin =   1.0e-7  ; lmax =   9.0e-7                 ; oo_magn = -7
@@ -159,16 +161,16 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
         if run_out == 'flu_mean' and np.isclose(max(mean_fields['Y']),2.1e-3, rtol=1e-4, atol=1e-4):
 
-            if   field == 'J_rate'         : lmin =   0.0     ; lmax =   1.0    ; levels_n  = 5 ; oo_magn =  0
-            elif field == 'fake_J_rate'    : lmin =   0.0     ; lmax =   1.0    ; levels_n  = 5 ; oo_magn =  0
+            if   field == 'J_rate'         : lmin =   0.0     ; lmax =   0.5    ; levels_n  = 5 ; oo_magn =  0
+            elif field == 'fake_J_rate'    : lmin =   0.0     ; lmax =   0.5    ; levels_n  = 5 ; oo_magn =  0
             elif field == 'Jrate_rms'      : lmin =   0.0     ; lmax =   1.2    ; levels_n  = 6 ; oo_magn =  0
             elif field == 'Y_rms'          : lmin =   0.0     ; lmax =   5.0e-4 ; levels_n  = 5
-            elif field == 'Temperature_rms': lmin =   0.0     ; lmax =   5.0e-4 ; levels_n  = 5
+            elif field == 'Temperature_rms': lmin =   0.08    ; lmax =   0.2    ; levels_n  = 5
 
         if run_out == 'flu_mean' and np.isclose(max(mean_fields['Y']),2.5e-3, rtol=1e-4, atol=1e-4):
 
-            if   field == 'J_rate'         : lmin =   0.0     ; lmax =   36.    ; levels_n  = 6 ; oo_magn =  0
-            elif field == 'fake_J_rate'    : lmin =   0.0     ; lmax =   36.    ; levels_n  = 6 ; oo_magn =  0
+            if   field == 'J_rate'         : lmin =   0.0     ; lmax =   5.     ; levels_n  = 6 ; oo_magn =  0
+            elif field == 'fake_J_rate'    : lmin =   0.0     ; lmax =   5.     ; levels_n  = 6 ; oo_magn =  0
             elif field == 'Jrate_rms'      : lmin =   0.0     ; lmax =   1.2    ; levels_n  = 6 ; oo_magn =  0
 
         if   field == 'part_number' : lmin = 0.0 ; lmax = util.OOMRoundDown(lmax)    ; levels_n  = 5
@@ -196,7 +198,7 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
 
         if   field == 'Sat_Ratio'       : lcountour[0] = 1.0
 
-        elif field == 'Temperature_rms' : lcountour    = np.insert(lcountour, 1, 0.01) #, axis = 0)
+#        elif field == 'Temperature_rms' : lcountour    = np.insert(lcountour, 1, 0.01) #, axis = 0)
 
         elif field in ['Y','Y_saturat','U_r','part_radius','mass_loading'] :
 
