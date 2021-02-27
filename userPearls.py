@@ -246,12 +246,19 @@ def contour_plots(run_dir,run_out,run_ver,res_dir,name_list):
             if   field == 'Sat_Ratio'              : lmin = 1.e+1 ; lmax = 1.e+4 #; levels_n = 3
 #            elif field in ['J_rate','fake_J_rate'] : lmin = 1.e-1 ; lmax = 1.e+3 #; levels_n = 3
 
-            if run_out == 'flu_mean' and np.isclose(max(mean_fields['Y']),2.1e-3, rtol=1e-4, atol=1e-4):
+            if   run_out == 'flu_mean' and np.isclose(max(mean_fields['Y']),2.1e-3, rtol=1e-4, atol=1e-4):
 
                 if   field in ['J_rate','fake_J_rate'] : 
 
 #                    lmin = 1.e-5 ; lmax = 1.0 ; oo_magn = -5 ; cm_format = util.OOMFormatter(oo_magn, mathText=False) #; levels_n  = 5 ; oo_magn =  0
                     lmin = 1.e-5 ; lmax = 1.0 ; oo_magn = -5 ; cm_format = '%.0e'
+
+            elif run_out == 'flu_mean' and np.isclose(max(mean_fields['Y']),2.5e-3, rtol=1e-4, atol=1e-4):
+
+                if   field in ['J_rate','fake_J_rate'] : 
+
+#                    lmin = 1.e-5 ; lmax = 1.0 ; oo_magn = -5 ; cm_format = util.OOMFormatter(oo_magn, mathText=False) #; levels_n  = 5 ; oo_magn =  0
+                    lmin = 1.e-4 ; lmax = 10.0 ; oo_magn = -5 ; cm_format = '%.0e'
                     
 
             lev_exp = np.arange(np.floor(np.log10(lmin)-1), np.ceil(np.log10(lmax)+1)) ; levs = np.power(10, lev_exp)
